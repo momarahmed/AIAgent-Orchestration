@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
 use App\Models\AgentVersion;
+use App\Models\TaskRun;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -130,5 +131,18 @@ class AgentController extends Controller
         }
         Audit::record('create', 'agent.duplicate', 'agent', $copy->id, ['source_id' => $agent->id], $request, $copy->tenant_id, $copy->project_id);
         return response()->json($copy->load('currentVersion'), 201);
+    }
+
+    /** AG-013 — agent execution history via task runs on agent nodes. */
+    public function runs(Agent $agent): JsonResponse
+    {
+        $tasks = TaskRun::query()
+            ->where('node_type', 'agent')
+            ->where('output->agent_id', $agent->id)
+            ->with(['run.workflow'])
+            ->orderByDesc('id')
+            ->paginate(50);
+
+        return response()->json($tasks);
     }
 }

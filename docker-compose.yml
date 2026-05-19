@@ -84,6 +84,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-eamcp_secret}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: eamcp-backend
       CACHE_STORE: redis
       QUEUE_CONNECTION: redis
       SESSION_DRIVER: redis
@@ -122,6 +124,22 @@ services:
       - ./frontend:/app:cached
       - eamcp_frontend_node_modules:/app/node_modules
       - eamcp_frontend_next:/app/.next
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # OpenTelemetry Collector — Phase 1 observability (debug exporter)
+  # -------------------------------------------------------------------
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    container_name: eamcp-otel
+    restart: unless-stopped
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./infra/otel-collector-config.yaml:/etc/otel-collector-config.yaml:ro
+    ports:
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
     networks:
       - eamcp-net
 

@@ -99,6 +99,9 @@ export default function WorkflowsPage() {
                 >
                   {running === w.id ? "Running…" : "▶ Run"}
                 </button>
+                <Link href={`/workflows/${w.id}/edit`} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-cyan-400/40">
+                  Edit graph
+                </Link>
                 <Link href="/runs" className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-cyan-400/40">
                   Run history
                 </Link>

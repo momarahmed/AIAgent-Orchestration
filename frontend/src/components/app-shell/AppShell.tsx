@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context";
 type NavItem = { href: string; label: string; icon: string; group: "core" | "build" | "ops" };
 
 const NAV: NavItem[] = [
+  { href: "/chat",        label: "Chat",             icon: "💬", group: "core" },
   { href: "/dashboard",   label: "Dashboard",        icon: "📊", group: "core" },
   { href: "/console",     label: "Platform Console", icon: "🛰️", group: "core" },
   { href: "/platform",    label: "Platform",         icon: "🌐", group: "core" },
@@ -15,6 +16,7 @@ const NAV: NavItem[] = [
   { href: "/agents",      label: "Agent Studio",     icon: "🤖", group: "build" },
   { href: "/mcp-servers", label: "MCP Studio",       icon: "🧩", group: "build" },
   { href: "/workflows",   label: "Workflow Builder", icon: "🔁", group: "build" },
+  { href: "/templates",   label: "Templates",        icon: "📋", group: "build" },
 
   { href: "/runs",        label: "Run History",      icon: "🧪", group: "ops" },
   { href: "/admin",       label: "Admin Console",    icon: "🛡️", group: "ops" },
@@ -120,7 +122,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="lg:hidden">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400 to-violet-500 text-lg">⚙️</div>
             </div>
-            <div className="hidden md:block">
+            <div className="hidden items-center gap-3 md:flex">
+              <div>
               <div className="text-xs uppercase tracking-wider text-slate-500">Tenant</div>
               <select
                 value={auth.activeTenantId ?? ""}
@@ -131,6 +134,20 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <option key={t.id} value={t.id}>{t.name} · {t.environment}</option>
                 ))}
               </select>
+              </div>
+              <div>
+                <div className="text-xs uppercase tracking-wider text-slate-500">Project</div>
+                <select
+                  value={auth.activeProjectId ?? ""}
+                  onChange={(e) => auth.setActiveProject(Number(e.target.value))}
+                  disabled={!auth.projects.length}
+                  className="mt-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm text-white outline-none focus:border-cyan-400/40 disabled:opacity-50"
+                >
+                  {auth.projects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 

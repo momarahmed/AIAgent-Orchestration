@@ -70,7 +70,7 @@ export type Project = { id: number; tenant_id: number; slug: string; name: strin
 export type Agent = { id: number; tenant_id: number; project_id: number; name: string; slug: string; status: string; risk_level: string; description?: string; current_version?: any; updated_at: string };
 export type McpServer = { id: number; name: string; slug: string; transport: string; runtime: string; endpoint?: string; status: string; health: string; tools?: Tool[]; updated_at: string };
 export type Tool = { id: number; mcp_server_id: number; name: string; description?: string; risk_level: string; is_enabled: boolean };
-export type Workflow = { id: number; name: string; slug: string; status: string; trigger_type: string; current_version?: { id: number; version: number; graph_json: any }; updated_at: string };
+export type Workflow = { id: number; tenant_id?: number; project_id?: number; name: string; slug: string; status: string; trigger_type: string; current_version?: { id: number; version: number; graph_json: any }; updated_at: string };
 export type WorkflowRun = { id: number; workflow_id: number; status: string; started_at?: string; completed_at?: string; output?: any; error?: string; tasks?: any[] };
 
 // Auth ----------------------------------------------------------------
@@ -93,6 +93,24 @@ export async function logout() {
   setAuthToken(null);
 }
 
+export const chatApi = {
+  execute: (payload: { prompt: string; agent_id?: number; tenant_id?: number; project_id?: number }) =>
+    api.post<{ run_id: number; response: string; mock?: boolean }>("/api/chat/execute", payload).then((r) => r.data),
+};
+
+export const templatesApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/templates", { params }).then((r) => r.data.data),
+  get: (id: number) => api.get(`/api/templates/${id}`).then((r) => r.data),
+};
+
+export const toolsApi = {
+  list: (serverId: number) => api.get(`/api/mcp-servers/${serverId}/tools`).then((r) => r.data.data),
+  create: (serverId: number, payload: any) => api.post(`/api/mcp-servers/${serverId}/tools`, payload).then((r) => r.data),
+  update: (serverId: number, toolId: number, payload: any) =>
+    api.put(`/api/mcp-servers/${serverId}/tools/${toolId}`, payload).then((r) => r.data),
+  remove: (serverId: number, toolId: number) => api.delete(`/api/mcp-servers/${serverId}/tools/${toolId}`),
+};
+
 // Resources -----------------------------------------------------------
 export const tenantsApi = {
   list: () => api.get<{ data: Tenant[] }>("/api/tenants").then((r) => r.data.data),
@@ -111,6 +129,7 @@ export const agentsApi = {
   update: (id: number, payload: any) => api.put<Agent>(`/api/agents/${id}`, payload).then((r) => r.data),
   remove: (id: number) => api.delete(`/api/agents/${id}`),
   duplicate: (id: number) => api.post<Agent>(`/api/agents/${id}/duplicate`).then((r) => r.data),
+  runs: (id: number) => api.get(`/api/agents/${id}/runs`).then((r) => r.data),
 };
 
 export const mcpServersApi = {
@@ -124,7 +143,7 @@ export const mcpServersApi = {
 
 export const workflowsApi = {
   list: (params: Record<string, any> = {}) => api.get("/api/workflows", { params }).then((r) => r.data.data),
-  get: (id: number) => api.get<Workflow>(`/api/workflows/${id}`).then((r) => r.data),
+  get: (id: number) => api.get<Workflow & { versions?: any[] }>(`/api/workflows/${id}`).then((r) => r.data),
   create: (payload: any) => api.post<Workflow>("/api/workflows", payload).then((r) => r.data),
   update: (id: number, payload: any) => api.put<Workflow>(`/api/workflows/${id}`, payload).then((r) => r.data),
   remove: (id: number) => api.delete(`/api/workflows/${id}`),

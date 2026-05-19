@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from "@mui/material";
-import { mcpServersApi, projectsApi } from "@/lib/api";
+import { mcpServersApi, projectsApi, toolsApi } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { PageHeader, StatusBadge, EmptyState } from "@/components/shared/PageHeader";
 
@@ -13,6 +13,7 @@ export default function McpServersPage() {
   const tenantId = auth.activeTenantId;
 
   const [open, setOpen] = useState(false);
+  const [toolsServer, setToolsServer] = useState<any | null>(null);
 
   const projects = useQuery({
     queryKey: ["projects", tenantId],
@@ -97,6 +98,9 @@ export default function McpServersPage() {
               </dl>
 
               <div className="mt-4 flex flex-wrap gap-2">
+                <button onClick={() => setToolsServer(m)} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-cyan-400/40">
+                  Manage tools
+                </button>
                 <button onClick={() => health.mutate(m.id)} className="rounded-xl border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-cyan-400/40">
                   Health check
                 </button>
@@ -110,7 +114,64 @@ export default function McpServersPage() {
       )}
 
       <NewMcpDialog open={open} onClose={() => setOpen(false)} projects={projects.data ?? []} tenantId={tenantId} onSubmit={(p) => create.mutate(p)} submitting={create.isPending} />
+      {toolsServer && (
+        <ToolsDialog server={toolsServer} onClose={() => setToolsServer(null)} onChanged={() => qc.invalidateQueries({ queryKey: ["mcp-servers"] })} />
+      )}
     </div>
+  );
+}
+
+function ToolsDialog({ server, onClose, onChanged }: { server: any; onClose: () => void; onChanged: () => void }) {
+  const [tools, setTools] = useState<any[]>(server.tools ?? []);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [risk, setRisk] = useState("L1");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    toolsApi.list(server.id).then(setTools).catch(() => {});
+  }, [server.id]);
+
+  async function addTool() {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      await toolsApi.create(server.id, { name, description, risk_level: risk });
+      const list = await toolsApi.list(server.id);
+      setTools(list);
+      setName("");
+      setDescription("");
+      onChanged();
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth PaperProps={{ sx: { background: "#0f172a", color: "white", borderRadius: 4 } }}>
+      <DialogTitle>Tools — {server.name}</DialogTitle>
+      <DialogContent>
+        <ul className="mb-4 divide-y divide-slate-800 text-sm">
+          {tools.map((t) => (
+            <li key={t.id} className="flex justify-between py-2">
+              <span className="font-medium text-white">{t.name}</span>
+              <span className="text-slate-500">{t.risk_level}</span>
+            </li>
+          ))}
+        </ul>
+        <Stack spacing={2}>
+          <TextField label="Tool name" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth />
+          <TextField select label="Risk" value={risk} onChange={(e) => setRisk(e.target.value)} fullWidth>
+            {["L0", "L1", "L2", "L3", "L4"].map((r) => <MenuItem key={r} value={r}>{r}</MenuItem>)}
+          </TextField>
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button onClick={onClose} variant="text" color="inherit">Close</Button>
+        <Button onClick={addTool} variant="contained" disabled={saving}>{saving ? "Adding…" : "Add tool"}</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

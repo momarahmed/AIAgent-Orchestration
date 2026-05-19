@@ -6,6 +6,8 @@ use App\Models\Agent;
 use App\Models\AgentVersion;
 use App\Models\McpServer;
 use App\Models\Project;
+use App\Models\Role;
+use App\Models\Template;
 use App\Models\Tenant;
 use App\Models\Tool;
 use App\Models\User;
@@ -19,6 +21,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['label' => 'Admin', 'permissions' => ['*']]);
+        $builderRole = Role::firstOrCreate(['name' => 'builder'], ['label' => 'Builder', 'permissions' => ['agents', 'mcp', 'workflows', 'runs']]);
+        $viewerRole = Role::firstOrCreate(['name' => 'viewer'], ['label' => 'Viewer', 'permissions' => ['read']]);
+
         // ---- Demo users ----
         $admin = User::firstOrCreate(
             ['email' => 'admin@enterprise-ai-mcp.local'],
@@ -43,9 +49,9 @@ class DatabaseSeeder extends Seeder
 
         foreach ($tenants as $t) {
             $tenant = Tenant::firstOrCreate(['slug' => $t['slug']], $t);
-            foreach ([$admin, $builder, $viewer] as $u) {
-                $u->tenants()->syncWithoutDetaching([$tenant->id]);
-            }
+            $admin->tenants()->syncWithoutDetaching([$tenant->id => ['role_id' => $adminRole->id]]);
+            $builder->tenants()->syncWithoutDetaching([$tenant->id => ['role_id' => $builderRole->id]]);
+            $viewer->tenants()->syncWithoutDetaching([$tenant->id => ['role_id' => $viewerRole->id]]);
         }
 
         $primary = Tenant::where('slug', 'esri-saudi')->first();
@@ -142,5 +148,16 @@ class DatabaseSeeder extends Seeder
             ['graph_json' => $graph, 'variables' => []]
         );
         $workflow->update(['current_version_id' => $wfVersion->id]);
+
+        Template::firstOrCreate(
+            ['slug' => 'hello-world-template'],
+            [
+                'tenant_id' => $primary->id,
+                'name' => 'Hello World Workflow',
+                'asset_type' => 'workflow',
+                'description' => 'Anchor scenario template — Trigger → Agent → MCP Tool.',
+                'payload' => ['workflow_slug' => 'hello-world'],
+            ]
+        );
     }
 }

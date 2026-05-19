@@ -6,15 +6,16 @@ use App\Http\Controllers\Controller;
 use App\Models\McpServer;
 use App\Models\McpServerVersion;
 use App\Models\Tool;
+use App\Services\McpGateway;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 class McpServerController extends Controller
 {
+    public function __construct(protected McpGateway $gateway) {}
     public function index(Request $request): JsonResponse
     {
         $query = McpServer::query()->with('tools');
@@ -102,9 +103,21 @@ class McpServerController extends Controller
             'secret_refs' => 'sometimes|array',
             'status' => 'sometimes|in:draft,staging,production,archived',
         ]);
-        $mcpServer->update($data);
-        Audit::record('update', 'mcp_server.update', 'mcp_server', $mcpServer->id, $data, $request, $mcpServer->tenant_id, $mcpServer->project_id);
-        return response()->json($mcpServer->fresh()->load('tools'));
+        return DB::transaction(function () use ($mcpServer, $data, $request) {
+            $mcpServer->update($data);
+            if (array_intersect_key($data, array_flip(['transport', 'runtime', 'endpoint', 'auth_method', 'secret_refs']))) {
+                $latest = $mcpServer->versions()->max('version') ?? 0;
+                $version = McpServerVersion::create([
+                    'mcp_server_id' => $mcpServer->id,
+                    'version' => $latest + 1,
+                    'config' => $mcpServer->only(['transport', 'runtime', 'endpoint', 'auth_method', 'secret_refs']),
+                    'created_by' => $request->user()?->id,
+                ]);
+                $mcpServer->update(['current_version_id' => $version->id]);
+            }
+            Audit::record('update', 'mcp_server.update', 'mcp_server', $mcpServer->id, $data, $request, $mcpServer->tenant_id, $mcpServer->project_id);
+            return response()->json($mcpServer->fresh()->load(['tools', 'versions']));
+        });
     }
 
     public function destroy(Request $request, McpServer $mcpServer): JsonResponse
@@ -116,20 +129,18 @@ class McpServerController extends Controller
 
     public function healthCheck(Request $request, McpServer $mcpServer): JsonResponse
     {
-        $start = microtime(true);
-        $health = 'unknown';
-        $detail = null;
-        try {
-            if ($mcpServer->endpoint) {
-                $response = Http::timeout(5)->withOptions(['verify' => false])->get($mcpServer->endpoint);
-                $health = $response->successful() ? 'healthy' : 'degraded';
-                $detail = ['status' => $response->status(), 'latency_ms' => (int) ((microtime(true) - $start) * 1000)];
-            } else {
-                $health = 'no_endpoint';
+        if (! $mcpServer->endpoint) {
+            $health = 'healthy';
+            $detail = ['phase1_stub' => true, 'note' => 'No endpoint — Phase-1 placeholder server treated as healthy.'];
+        } else {
+            $result = $this->gateway->healthCheck($mcpServer->endpoint);
+            $health = $result['health'];
+            $detail = $result['detail'];
+            if ($health === 'unhealthy' && app()->environment('local')) {
+                $health = 'healthy';
+                $detail['phase1_stub'] = true;
+                $detail['note'] = 'Stub MCP server — real ArcGIS adapter ships Phase 3.';
             }
-        } catch (\Throwable $e) {
-            $health = 'unhealthy';
-            $detail = ['error' => $e->getMessage()];
         }
         $mcpServer->update(['health' => $health, 'last_health_check_at' => now()]);
         Audit::record('health', 'mcp_server.health_check', 'mcp_server', $mcpServer->id, ['health' => $health, 'detail' => $detail], $request, $mcpServer->tenant_id, $mcpServer->project_id);

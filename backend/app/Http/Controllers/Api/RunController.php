@@ -14,6 +14,8 @@ class RunController extends Controller
         $q = WorkflowRun::query()->with('workflow');
         if ($id = $request->query('workflow_id')) $q->where('workflow_id', $id);
         if ($s = $request->query('status')) $q->where('status', $s);
+        if ($from = $request->query('from')) $q->where('created_at', '>=', $from);
+        if ($to = $request->query('to')) $q->where('created_at', '<=', $to);
         return response()->json(['data' => $q->orderByDesc('id')->paginate(50)]);
     }
 

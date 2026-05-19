@@ -13,6 +13,7 @@ export default function AgentsPage() {
   const tenantId = auth.activeTenantId;
 
   const [open, setOpen] = useState(false);
+  const [editAgent, setEditAgent] = useState<any | null>(null);
   const [search, setSearch] = useState("");
 
   const projectsQuery = useQuery({
@@ -32,6 +33,11 @@ export default function AgentsPage() {
   const createAgent = useMutation({
     mutationFn: (payload: any) => agentsApi.create(payload),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["agents"] }); setOpen(false); },
+  });
+
+  const updateAgent = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) => agentsApi.update(id, payload),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["agents"] }); setEditAgent(null); },
   });
 
   const archive = useMutation({
@@ -101,6 +107,9 @@ export default function AgentsPage() {
                   <td className="px-4 py-3 text-slate-500">{new Date(a.updated_at).toLocaleString()}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex gap-2">
+                      <button onClick={() => setEditAgent(a)} className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:border-cyan-400/40">
+                        Edit
+                      </button>
                       <button onClick={() => duplicate.mutate(a.id)} className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:border-cyan-400/40">
                         Duplicate
                       </button>
@@ -124,7 +133,54 @@ export default function AgentsPage() {
         onSubmit={(payload) => createAgent.mutate(payload)}
         submitting={createAgent.isPending}
       />
+      {editAgent && (
+        <EditAgentDialog
+          agent={editAgent}
+          onClose={() => setEditAgent(null)}
+          onSubmit={(payload) => updateAgent.mutate({ id: editAgent.id, payload })}
+          submitting={updateAgent.isPending}
+        />
+      )}
     </div>
+  );
+}
+
+function EditAgentDialog({
+  agent, onClose, onSubmit, submitting,
+}: { agent: any; onClose: () => void; onSubmit: (p: any) => void; submitting: boolean }) {
+  const [name, setName] = useState(agent.name);
+  const [description, setDescription] = useState(agent.description ?? "");
+  const [systemInstructions, setSystemInstructions] = useState(agent.current_version?.system_instructions ?? "");
+  const [model, setModel] = useState(agent.current_version?.model_config?.model ?? "gpt-4o-mini");
+  const [memoryScope, setMemoryScope] = useState(agent.current_version?.memory_scope ?? "session");
+
+  return (
+    <Dialog open onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { background: "#0f172a", color: "white", borderRadius: 4 } }}>
+      <DialogTitle>Edit agent</DialogTitle>
+      <DialogContent>
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField label="Model" value={model} onChange={(e) => setModel(e.target.value)} fullWidth />
+          <TextField select label="Memory scope" value={memoryScope} onChange={(e) => setMemoryScope(e.target.value)} fullWidth>
+            {["none", "session", "project", "tenant"].map((m) => <MenuItem key={m} value={m}>{m}</MenuItem>)}
+          </TextField>
+          <TextField label="System instructions" value={systemInstructions} onChange={(e) => setSystemInstructions(e.target.value)} fullWidth multiline minRows={4} />
+        </Stack>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 3 }}>
+        <Button onClick={onClose} variant="text" color="inherit">Cancel</Button>
+        <Button
+          onClick={() => onSubmit({
+            name, description, system_instructions: systemInstructions,
+            memory_scope: memoryScope,
+            model_config: { ...(agent.current_version?.model_config ?? {}), model },
+          })}
+          variant="contained"
+          disabled={submitting}
+        >{submitting ? "Saving…" : "Save"}</Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 
