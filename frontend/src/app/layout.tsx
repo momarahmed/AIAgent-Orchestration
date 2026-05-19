@@ -22,8 +22,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} dark`}>
-      <body className="bg-slate-950 text-slate-100 antialiased">
+    // suppressHydrationWarning: browser extensions (password managers, ad blockers,
+    // etc.) often inject attributes on <html>/<body> before React hydrates.
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
+      <body className="bg-slate-950 text-slate-100 antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

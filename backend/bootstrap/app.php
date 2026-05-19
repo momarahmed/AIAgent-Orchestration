@@ -14,10 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         apiPrefix: 'api',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // SPA-style auth: parse session cookies for stateful frontends.
-        $middleware->statefulApi();
-
-        // Trust the docker-compose internal network proxies for IP detection.
+        // Auth uses Sanctum personal access tokens (Bearer) from the Next.js SPA —
+        // NOT cookie/session SPA mode. Do NOT enable statefulApi() here; that would
+        // require CSRF cookies (/sanctum/csrf-cookie) on every mutating request and
+        // causes "CSRF token mismatch" when the client only sends Authorization headers.
         $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {

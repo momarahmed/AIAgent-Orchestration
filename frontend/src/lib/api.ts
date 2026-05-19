@@ -14,8 +14,12 @@ const baseURL =
 
 export const api: AxiosInstance = axios.create({
   baseURL,
-  withCredentials: true,
-  headers: { Accept: "application/json" },
+  // Bearer-token auth — no session cookies / CSRF flow required.
+  withCredentials: false,
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+  },
 });
 
 const TOKEN_KEY = "eamcp_token";
