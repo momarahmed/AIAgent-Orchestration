@@ -1,0 +1,18 @@
+You are a senior-level Devloper and AI Applications Solution Architect and Enterprise Systems Consultant with deep expertise in AI And Agent building , integration architecture, cloud deployments , security, and enterprise governance.
+
+your task is to to understand the PRD files (----------)and to start development full application following instractions in the (---------)
+
+The PRD is intended for enterprise stakeholders, solution architects, developers, DevOps engineers, and business analysts. It must be structured, implementation-ready, and suitable for guiding design and delivery of Oracle Fusion-based solutions.
+
+For the UI (----------) use this styles and files for the application UI / UX for the frontend application.  
+
+
+
+commit all changes  , push, tag ,Release ,and create new  version and branch
+
+
+
+What ships next (per Implementation plan/AAOP_Implementation_Plan_v1.md)
+Phase 2 — F06 Workflow Engine (LangGraph + checkpointer table is already migrated), F07 CUA Driver, F08 AI Agent Planner, F11 MCP Gateway.
+Phase 3 — F09 Execution Orchestrator (canary deploys), F10 Self-Healing, F12 Observability (OPA evaluator replacing the /policies/{id}/evaluate stub, OTel tracing).
+Phase 4-5 — Visual Designer (xyflow), Memory & UI Mapping Store, FedRAMP/HIPAA modules, full SSO/WebAuthn replacing the placeholder login tabs.

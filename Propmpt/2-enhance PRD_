@@ -1,0 +1,60 @@
+Act as a Senior Product Owner and Business Analyst with 10+ years of experience in building scalable SaaS and cloud-native products.
+
+Your task is to review and enhance the following PRD to make it enterprise-grade, clear, structured, and actionable for engineering, design, and stakeholders.
+
+Focus on improving:
+
+1. Clarity & Structure
+- Rewrite content to be concise, professional, and well-structured
+- Use clear headings, bullet points, and tables where needed
+- Remove ambiguity and vague statements
+
+2. Completeness
+Ensure the PRD includes (add missing sections if needed):
+- Executive Summary
+- Problem Statement
+- Goals & Objectives (SMART)
+- Stakeholders
+- User Personas
+- User Journeys / Flows
+- Functional Requirements
+- Non-Functional Requirements (performance, scalability, security, compliance)
+- Technical Considerations (APIs, integrations, architecture hints)
+- Data Model / Entities (if applicable)
+- UX/UI Requirements
+- Edge Cases & Error Handling
+- Assumptions & Constraints
+- Dependencies
+- Risks & Mitigation Plan
+- Success Metrics (KPIs, DORA if applicable)
+- Release Plan / Milestones
+
+3. Engineering Readiness
+- Convert requirements into clear, testable user stories
+- Add acceptance criteria (Given / When / Then format)
+- Identify API contracts or integration points
+- Highlight scalability and DevOps considerations (CI/CD, observability, rollback)
+
+4. DevOps & Cloud Alignment
+- Suggest improvements aligned with Kubernetes, Terraform, and cloud-native best practices
+- Include observability (logs, metrics, tracing)
+- Include security best practices (WAF, IAM, secrets management)
+
+5. UX & Product Thinking
+- Improve usability and flows
+- Suggest UI components (tables, dashboards, forms)
+- Ensure consistency in experience
+
+6. Output Format
+- Return the enhanced PRD in clean Markdown format
+- Use sections, tables, and diagrams (in text form if needed)
+- Highlight "Improved" or "Added" sections clearly
+
+7. Tone
+- Professional, concise, and decision-oriented
+- Suitable for CTO, engineering team, and stakeholders
+
+---
+
+PRD INPUT:
+<PASTE YOUR PRD HERE>
