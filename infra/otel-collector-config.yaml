@@ -12,15 +12,13 @@ processors:
 exporters:
   debug:
     verbosity: detailed
-  logging:
-    loglevel: info
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [debug, logging]
+      exporters: [debug]
     metrics:
       receivers: [otlp]
       processors: [batch]

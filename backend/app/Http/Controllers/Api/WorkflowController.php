@@ -33,6 +33,8 @@ class WorkflowController extends Controller
             'name' => 'required|string|max:160',
             'description' => 'nullable|string',
             'trigger_type' => 'sometimes|in:manual,schedule,webhook,event,chat',
+            'schedule_config' => 'sometimes|array',
+            'retry_policy' => 'sometimes|array',
             'graph_json' => 'sometimes|array',
             'variables' => 'sometimes|array',
         ]);
@@ -49,6 +51,8 @@ class WorkflowController extends Controller
                 'slug' => Str::slug($data['name']) . '-' . Str::lower(Str::random(3)),
                 'description' => $data['description'] ?? null,
                 'trigger_type' => $data['trigger_type'] ?? 'manual',
+                'schedule_config' => $data['schedule_config'] ?? null,
+                'retry_policy' => $data['retry_policy'] ?? null,
                 'status' => 'draft',
             ]);
             $v = $wf->versions()->create([
@@ -75,6 +79,8 @@ class WorkflowController extends Controller
             'description' => 'nullable|string',
             'status' => 'sometimes|in:draft,staging,production,archived',
             'trigger_type' => 'sometimes|in:manual,schedule,webhook,event,chat',
+            'schedule_config' => 'sometimes|array',
+            'retry_policy' => 'sometimes|array',
             'graph_json' => 'sometimes|array',
             'variables' => 'sometimes|array',
         ]);
@@ -84,7 +90,9 @@ class WorkflowController extends Controller
         }
 
         return DB::transaction(function () use ($workflow, $data, $request) {
-            $workflow->update(array_intersect_key($data, array_flip(['name', 'description', 'status', 'trigger_type'])));
+            $workflow->update(array_intersect_key($data, array_flip([
+                'name', 'description', 'status', 'trigger_type', 'schedule_config', 'retry_policy',
+            ])));
             if (array_key_exists('graph_json', $data) || array_key_exists('variables', $data)) {
                 $latest = $workflow->versions()->max('version') ?? 0;
                 $base = $workflow->currentVersion?->only(['graph_json', 'variables']) ?? [];

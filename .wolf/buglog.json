@@ -96,6 +96,103 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-05-19T02:39:09.487Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-05-19T02:46:53.237Z",
+      "error_message": "Incorrect value in code",
+      "file": "frontend/src/app/(app)/workflows/page.tsx",
+      "root_cause": "Had \"Build · Phase 1\"",
+      "fix": "Changed to \"Build · Phase 2\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-19T02:46:53.237Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-05-19T02:49:00.421Z",
+      "error_message": "Type error",
+      "file": "frontend/src/app/(app)/workflows/page.tsx",
+      "root_cause": "Missing or incorrect type annotation",
+      "fix": "Added type assertion/annotation | Also: function PasswordLoginForm({ error, setError }: { error: str",
+      "tags": [
+        "auto-detected",
+        "type-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-05-19T02:49:42.018Z"
+    },
+    {
+      "id": "bug-009",
+      "timestamp": "2026-05-19T02:49:07.257Z",
+      "error_message": "Wrong reference: motion should be div",
+      "file": "frontend/src/app/(app)/workflows/page.tsx",
+      "root_cause": "Used \"motion\" instead of \"div\"",
+      "fix": "Changed motion → div",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-19T02:49:07.257Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-05-19T02:56:43.750Z",
+      "error_message": "CSS fix: href",
+      "file": "frontend/src/components/app-shell/AppShell.tsx",
+      "root_cause": "href: \"/admin\",       label: \"Admin Console\",    icon: \"🛡️\", group: \"ops\" → \"/admin\",           label: \"Admin Console\",      icon: \"🛡️\", group: \"ops\"",
+      "fix": "Changed href: \"/admin\",       label: \"Admin Console\",    icon: \"🛡️\", group: \"ops\" → \"/admin\",           label: \"Admin Console\",      icon: \"🛡️\", group: \"ops\"",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "tsx"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-19T02:56:43.750Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-05-19T03:07:00.000Z",
+      "error_message": "failed to resolve reference \"docker.io/openpolicyagent/opa:0.66.0-rootless\": not found",
+      "file": "docker-compose.yml",
+      "root_cause": "OPA moved from 0.x to 1.x and dropped the -rootless image variant; tag 0.66.0-rootless never existed",
+      "fix": "Changed image to openpolicyagent/opa:1.15.1 (latest stable)",
+      "tags": [
+        "docker",
+        "opa",
+        "image-tag",
+        "docker-compose"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-19T03:07:00.000Z"
+    },
+    {
+      "id": "bug-012",
+      "timestamp": "2026-05-19T03:39:25.907Z",
+      "error_message": "Incorrect value in code",
+      "file": "backend/database/seeders/Phase3Seeder.php",
+      "root_cause": "Had '../infra/opa/deployment.rego'",
+      "fix": "Changed to 'deployment.rego'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "php"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-05-19T03:39:25.907Z"
     }
   ]
 }

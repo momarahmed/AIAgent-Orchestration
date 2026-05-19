@@ -1,0 +1,106 @@
+global:
+  image:
+    registry: ghcr.io/eamcp
+    pullPolicy: IfNotPresent
+  environment: staging
+  networkPolicies:
+    enabled: true
+
+backend:
+  replicaCount: 2
+  image:
+    tag: "latest"
+  env:
+    APP_ENV: staging
+    APP_DEBUG: "false"
+    OPA_URL: http://opa.eamcp-staging.svc.cluster.local:8181
+    VAULT_ADDR: http://vault.eamcp-staging.svc.cluster.local:8200
+    TEMPORAL_HOST: temporal-frontend.eamcp-staging.svc.cluster.local:7233
+    ACTIVEPIECES_URL: http://activepieces.eamcp-staging.svc.cluster.local:80
+    QDRANT_URL: http://qdrant.eamcp-staging.svc.cluster.local:6333
+    GUARDRAIL_ENABLED: "true"
+    GUARDRAIL_PROVIDER: openai
+    GUARDRAIL_MODEL: gpt-4o-mini
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+frontend:
+  replicaCount: 2
+  image:
+    tag: "latest"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "vault:secret/eamcp/staging/mysql-root"
+    database: eamcp
+  primary:
+    persistence:
+      size: 30Gi
+
+redis:
+  enabled: true
+
+opa:
+  enabled: true
+  replicaCount: 2
+  policies:
+    syncInterval: 30s
+
+vault:
+  enabled: false
+
+temporal:
+  enabled: true
+  cluster:
+    history:
+      replicaCount: 2
+    matching:
+      replicaCount: 2
+    frontend:
+      replicaCount: 2
+    worker:
+      replicaCount: 2
+
+activepieces:
+  enabled: true
+  replicaCount: 1
+
+qdrant:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    size: 15Gi
+
+sandbox:
+  namespace: eamcp-sandbox-staging
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+securityScanner:
+  trivy:
+    enabled: true
+    severity: "CRITICAL,HIGH"
+  grype:
+    enabled: true
+  secretScanner:
+    enabled: true
+  imageSigningEnabled: true

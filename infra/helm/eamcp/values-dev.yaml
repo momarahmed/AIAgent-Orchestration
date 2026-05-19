@@ -1,0 +1,100 @@
+global:
+  image:
+    registry: ghcr.io/eamcp
+    pullPolicy: Always
+  environment: dev
+  networkPolicies:
+    enabled: false
+
+backend:
+  replicaCount: 1
+  image:
+    tag: "latest"
+  env:
+    APP_ENV: local
+    APP_DEBUG: "true"
+    OPA_URL: http://opa.eamcp-dev.svc.cluster.local:8181
+    VAULT_ADDR: http://vault.eamcp-dev.svc.cluster.local:8200
+    TEMPORAL_HOST: temporal-frontend.eamcp-dev.svc.cluster.local:7233
+    ACTIVEPIECES_URL: http://activepieces.eamcp-dev.svc.cluster.local:80
+    QDRANT_URL: http://qdrant.eamcp-dev.svc.cluster.local:6333
+    GUARDRAIL_ENABLED: "false"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+frontend:
+  replicaCount: 1
+  image:
+    tag: "latest"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "dev-secret"
+    database: eamcp
+  primary:
+    persistence:
+      size: 10Gi
+
+redis:
+  enabled: true
+
+opa:
+  enabled: true
+  replicaCount: 1
+
+vault:
+  enabled: true
+  server:
+    dev:
+      enabled: true
+
+temporal:
+  enabled: true
+  cluster:
+    history:
+      replicaCount: 1
+    matching:
+      replicaCount: 1
+    frontend:
+      replicaCount: 1
+    worker:
+      replicaCount: 1
+
+activepieces:
+  enabled: true
+  replicaCount: 1
+
+qdrant:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    size: 5Gi
+
+sandbox:
+  namespace: eamcp-sandbox-dev
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+
+securityScanner:
+  trivy:
+    enabled: false
+  grype:
+    enabled: false
+  secretScanner:
+    enabled: true
+  imageSigningEnabled: false

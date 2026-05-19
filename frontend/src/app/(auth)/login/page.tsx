@@ -157,13 +157,12 @@ function TenantSelector({ tenant, setTenant }: { tenant: TenantId; setTenant: (t
   );
 }
 
-function PasswordLoginForm() {
+function PasswordLoginForm({ error, setError }: { error: string | null; setError: (error: string | null) => void }) {
   const auth = useAuth();
   const [email, setEmail] = useState("admin@enterprise-ai-mcp.local");
   const [password, setPassword] = useState("Admin@12345");
   const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -226,11 +225,6 @@ function PasswordLoginForm() {
       >
         {submitting ? "Signing in…" : "Sign in securely"}
       </button>
-      {error && (
-        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm leading-6 text-rose-200">
-          {error}
-        </div>
-      )}
       <div className="rounded-2xl border border-slate-800 bg-slate-950 p-3 text-xs leading-5 text-slate-400">
         Demo credentials seeded for local dev: <code className="text-cyan-300">admin@enterprise-ai-mcp.local</code> / <code className="text-cyan-300">Admin@12345</code>
       </div>
@@ -282,10 +276,16 @@ function PasskeyPanel() {
 function LoginCard() {
   const [method, setMethod] = useState<LoginMethod>("password");
   const [tenant, setTenant] = useState<TenantId>("esri-saudi");
+  const [loginError, setLoginError] = useState<string | null>(null);
   const selectedTenant = useMemo(() => tenants.find((item) => item.id === tenant) ?? tenants[0], [tenant]);
 
   return (
     <section className="flex min-h-screen flex-1 items-center justify-center px-5 py-8 lg:px-8">
+      {loginError && (
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm leading-6 text-rose-200">
+          {loginError}
+        </div>
+      )}
       <div className="w-full max-w-[520px]">
         <div className="mb-8 lg:hidden">
           <div className="flex items-center gap-3">
@@ -327,7 +327,7 @@ function LoginCard() {
 
           <div className="mt-6 space-y-6">
             <TenantSelector tenant={tenant} setTenant={setTenant} />
-            {method === "password" && <PasswordLoginForm />}
+            {method === "password" && <PasswordLoginForm error={loginError} setError={setLoginError} />}
             {method === "sso" && <SsoLoginPanel />}
             {method === "passkey" && <PasskeyPanel />}
           </div>

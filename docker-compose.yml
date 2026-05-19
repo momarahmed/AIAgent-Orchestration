@@ -107,6 +107,40 @@ services:
       - eamcp-net
 
   # -------------------------------------------------------------------
+  # Scheduler — Laravel schedule:work (cron workflow dispatch)
+  # -------------------------------------------------------------------
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eamcp-scheduler
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-eamcp}
+      DB_USERNAME: ${DB_USERNAME:-eamcp}
+      DB_PASSWORD: ${DB_PASSWORD:-eamcp_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+    volumes:
+      - ./backend:/var/www/html:cached
+      - eamcp_backend_vendor:/var/www/html/vendor
+    command: ["php", "artisan", "schedule:work"]
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
   # Frontend — Next.js (latest) with MUI + Tailwind, hot reload
   # -------------------------------------------------------------------
   frontend:
@@ -138,7 +172,7 @@ services:
   # OPA — Phase 2 basic policy engine (risk-level + agent allowlist)
   # -------------------------------------------------------------------
   opa:
-    image: openpolicyagent/opa:0.66.0-rootless
+    image: openpolicyagent/opa:1.15.1
     container_name: eamcp-opa
     restart: unless-stopped
     command:
@@ -222,6 +256,47 @@ services:
       - eamcp-net
 
   # -------------------------------------------------------------------
+  # Activepieces — Phase 3 SaaS connector bridge
+  # -------------------------------------------------------------------
+  activepieces:
+    image: activepieces/activepieces:0.30.0
+    container_name: eamcp-activepieces
+    restart: unless-stopped
+    environment:
+      AP_ENGINE_EXECUTABLE_PATH: dist/packages/engine/main.js
+      AP_EXECUTION_MODE: UNSANDBOXED
+      AP_POSTGRES_DATABASE: activepieces
+      AP_POSTGRES_HOST: temporal-postgres
+      AP_POSTGRES_PORT: 5432
+      AP_POSTGRES_USERNAME: temporal
+      AP_POSTGRES_PASSWORD: temporal
+      AP_FRONTEND_URL: http://127.0.0.1:8070
+      AP_WEBHOOK_TIMEOUT_SECONDS: 30
+      AP_TRIGGER_DEFAULT_POLL_INTERVAL: 5
+      AP_TELEMETRY_ENABLED: "false"
+    depends_on:
+      - temporal-postgres
+    ports:
+      - "127.0.0.1:8070:80"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Qdrant — Phase 3 vector DB for RAG/File-PDF MCP Server
+  # -------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:v1.10.0
+    container_name: eamcp-qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    volumes:
+      - eamcp_qdrant_data:/qdrant/storage
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
   # OpenTelemetry Collector — Phase 1 observability (debug exporter)
   # -------------------------------------------------------------------
   otel-collector:
@@ -244,6 +319,7 @@ volumes:
   eamcp_frontend_node_modules:
   eamcp_frontend_next:
   eamcp_temporal_pg:
+  eamcp_qdrant_data:
 
 networks:
   eamcp-net:

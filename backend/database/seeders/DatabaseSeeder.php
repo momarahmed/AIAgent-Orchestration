@@ -14,7 +14,6 @@ use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowVersion;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -26,17 +25,19 @@ class DatabaseSeeder extends Seeder
         $viewerRole = Role::firstOrCreate(['name' => 'viewer'], ['label' => 'Viewer', 'permissions' => ['read']]);
 
         // ---- Demo users ----
-        $admin = User::firstOrCreate(
+        // Plain passwords — User model's "hashed" cast handles bcrypt.
+        // updateOrCreate resets passwords on every seed so login works after DB wipes.
+        $admin = User::updateOrCreate(
             ['email' => 'admin@enterprise-ai-mcp.local'],
-            ['name' => 'Platform Admin', 'password' => Hash::make('Admin@12345')]
+            ['name' => 'Platform Admin', 'password' => 'Admin@12345']
         );
-        $builder = User::firstOrCreate(
+        $builder = User::updateOrCreate(
             ['email' => 'builder@enterprise-ai-mcp.local'],
-            ['name' => 'Agent Builder', 'password' => Hash::make('Builder@12345')]
+            ['name' => 'Agent Builder', 'password' => 'Builder@12345']
         );
-        $viewer = User::firstOrCreate(
+        $viewer = User::updateOrCreate(
             ['email' => 'viewer@enterprise-ai-mcp.local'],
-            ['name' => 'Business Viewer', 'password' => Hash::make('Viewer@12345')]
+            ['name' => 'Business Viewer', 'password' => 'Viewer@12345']
         );
 
         // ---- Tenants ----
@@ -206,5 +207,8 @@ class DatabaseSeeder extends Seeder
                 ],
             ]
         );
+
+        // Phase 3 seeder
+        $this->call(Phase3Seeder::class);
     }
 }

@@ -1,0 +1,126 @@
+global:
+  image:
+    registry: ghcr.io/eamcp
+    pullPolicy: IfNotPresent
+  environment: production
+  networkPolicies:
+    enabled: true
+
+backend:
+  replicaCount: 3
+  image:
+    tag: "1.3.0"
+  env:
+    APP_ENV: production
+    APP_DEBUG: "false"
+    OPA_URL: http://opa.eamcp-prod.svc.cluster.local:8181
+    VAULT_ADDR: http://vault.eamcp-prod.svc.cluster.local:8200
+    TEMPORAL_HOST: temporal-frontend.eamcp-prod.svc.cluster.local:7233
+    ACTIVEPIECES_URL: http://activepieces.eamcp-prod.svc.cluster.local:80
+    QDRANT_URL: http://qdrant.eamcp-prod.svc.cluster.local:6333
+    GUARDRAIL_ENABLED: "true"
+    GUARDRAIL_PROVIDER: openai
+    GUARDRAIL_MODEL: gpt-4o-mini
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+frontend:
+  replicaCount: 3
+  image:
+    tag: "1.3.0"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "vault:secret/eamcp/prod/mysql-root"
+    database: eamcp
+  primary:
+    persistence:
+      size: 100Gi
+  replication:
+    enabled: true
+    readReplicas: 2
+
+redis:
+  enabled: true
+  architecture: replication
+  sentinel:
+    enabled: true
+
+opa:
+  enabled: true
+  replicaCount: 3
+  policies:
+    syncInterval: 30s
+
+vault:
+  enabled: false
+
+temporal:
+  enabled: true
+  cluster:
+    history:
+      replicaCount: 3
+    matching:
+      replicaCount: 3
+    frontend:
+      replicaCount: 3
+    worker:
+      replicaCount: 5
+
+activepieces:
+  enabled: true
+  replicaCount: 2
+
+qdrant:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    size: 50Gi
+
+sandbox:
+  namespace: eamcp-sandbox-prod
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop: ["ALL"]
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  runtimeClass: gvisor
+
+securityScanner:
+  trivy:
+    enabled: true
+    severity: "CRITICAL,HIGH,MEDIUM"
+  grype:
+    enabled: true
+  secretScanner:
+    enabled: true
+  imageSigningEnabled: true
+  cosignKeyRef: "vault:transit/eamcp-cosign"

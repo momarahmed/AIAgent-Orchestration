@@ -1,13 +1,13 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T02:39:10.952Z
-> Files: 259 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T03:50:35.314Z
+> Files: 314 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
-- `.gitignore` — Git ignore rules (~229 tok)
+- `.gitignore` — Git ignore rules (~239 tok)
 - `CLAUDE.md` — OpenWolf (~57 tok)
-- `docker-compose.yml` — Docker Compose services (~2234 tok)
+- `docker-compose.yml` — Docker Compose services (~2914 tok)
 - `README.md` — Project documentation (~2187 tok)
 
 ## .claude/
@@ -32,6 +32,10 @@
 - `openwolf-session.sh` (~68 tok)
 - `openwolf-stop.sh` (~65 tok)
 - `transform.mjs` — Transform Cursor hook stdin JSON → OpenWolf (Claude Code) hook format. (~662 tok)
+
+## .github/workflows/
+
+- `ci-cd.yml` — CI: EAMCP CI/CD Pipeline (~1682 tok)
 
 ## PRD/
 
@@ -81,6 +85,10 @@
 - `README.md` — Project documentation (~978 tok)
 - `vite.config.js` — Vite build configuration (~125 tok)
 
+## backend/app/Console/Commands/
+
+- `DispatchScheduledWorkflows.php` — DispatchScheduledWorkflows: handle (~795 tok)
+
 ## backend/app/Contracts/
 
 - `ModelProvider.php` — Interface: ModelProvider (3 methods) (~115 tok)
@@ -95,6 +103,7 @@
 - `AgentController.php` — AG-013 — agent execution history via task runs on agent nodes. (~1776 tok)
 - `ApprovalController.php` — index, show, approve, reject (~378 tok)
 - `AuditController.php` — index (~192 tok)
+- `AuditReportController.php` — Paginated audit events with filtering. (~1148 tok)
 - `AuthController.php` — login, register, me, logout (~690 tok)
 - `ChatController.php` — Phase-1 Chat UI backend — single-turn prompt execution with run record (UX-002). (~1060 tok)
 - `CodegenController.php` — generateMcp, show, index (~351 tok)
@@ -103,30 +112,55 @@
 - `DeploymentController.php` — index, show, store, approve, rollback (~560 tok)
 - `McpServerController.php` — index, store, show, update, destroy + 1 more (~1871 tok)
 - `MetricsController.php` — Aggregate KPI / dashboard metrics for the Platform Console. (~924 tok)
+- `NetworkPolicyController.php` — index, store, update, destroy, check + 1 more (~985 tok)
+- `OpaPolicyController.php` — index, show, store, update, destroy + 5 more (~996 tok)
 - `ProjectController.php` — index, store, show, update, destroy (~588 tok)
+- `ProviderBudgetController.php` — index, store, update, destroy, check + 1 more (~808 tok)
+- `RbacController.php` — roles, createRole, updateRole, permissions, assignTenantRole + 6 more (~1671 tok)
 - `RunController.php` — index, show (~235 tok)
 - `SecretController.php` — index, store, destroy (~421 tok)
+- `SecurityScanController.php` — index, show, triggerScan, scanDeployment, promotionGate + 1 more (~903 tok)
 - `TemplateController.php` — Phase-1 template stub — full lifecycle in Phase 2. (~370 tok)
 - `TemplateLifecycleController.php` — fromAsset, exportJson, exportZip, importJson, importZip + 1 more (~723 tok)
 - `TenantController.php` — index, store, show, update, destroy (~526 tok)
 - `TestController.php` — index, store, show, run, execution (~485 tok)
 - `ToolController.php` — index, store, update, destroy (~631 tok)
 - `VersionController.php` — agentVersions, workflowVersions, mcpVersions, diffAgent, diffWorkflow + 3 more (~914 tok)
-- `WorkflowController.php` — index, store, show, update, destroy + 1 more (~1546 tok)
+- `WorkflowController.php` — index, store, show, update, destroy + 1 more (~1653 tok)
+
+## backend/app/Http/Middleware/
+
+- `EnforceRbac.php` — Phase 3 RBAC middleware — resolves tenant/project from route, checks permission via RbacService (~600 tok)
+- `EnforceRbac.php` — Usage in routes: ->middleware('rbac:agents.create') (~691 tok)
+- `EnsureTenantIsolation.php` — Phase 3 tenant isolation — blocks cross-tenant access (~350 tok)
+- `EnsureTenantIsolation.php` — Verifies that the authenticated user belongs to the tenant referenced (~415 tok)
+- `PromptInjectionFilter.php` — Phase 3 prompt-injection filter on chat/workflow routes (~400 tok)
+- `PromptInjectionFilter.php` — Scans prompt/input fields for injection patterns. (~447 tok)
 
 ## backend/app/Models/
 
+- `AbacPolicy.php` — Model — 10 fields, 2 rels (~184 tok)
+- `ActivepiecesConnection.php` — Model — 10 fields, 2 rels (~193 tok)
 - `Agent.php` — Model — 10 fields, 2 casts, 4 rels (~289 tok)
 - `AgentVersion.php` — Model — 10 fields, 8 casts, 1 rels (~194 tok)
 - `Approval.php` — Model — 14 fields, 8 casts (~182 tok)
 - `AuditEvent.php` — Model — 10 fields, 2 casts (~116 tok)
+- `AuditExport.php` — Model — 12 fields, 3 rels (~271 tok)
+- `AuditReportTemplate.php` — Model — 7 fields (~98 tok)
 - `CodegenJob.php` — Model — 12 fields, 8 casts (~128 tok)
 - `Deployment.php` — Model — 15 fields, 10 casts, 1 rels (~199 tok)
-- `McpServer.php` — Model — 14 fields, 4 casts, 4 rels (~300 tok)
+- `McpServer.php` — Model — 17 fields, 4 rels (~346 tok)
 - `McpServerVersion.php` — Model — 4 fields, 2 casts, 1 rels (~131 tok)
+- `NetworkAllowlist.php` — Model — 10 fields, 2 rels (~175 tok)
+- `OpaPolicy.php` — Model — 13 fields, 3 rels (~260 tok)
+- `OpaPolicyVersion.php` — Model — 6 fields, 1 rels (~135 tok)
+- `Permission.php` — Model — 4 fields, 1 rels (~101 tok)
 - `Project.php` — Model — 5 fields, 2 casts, 4 rels (~239 tok)
-- `Role.php` — Model — 3 fields, 2 casts (~57 tok)
+- `PromptInjectionLog.php` — Model — 10 fields, 2 rels (~175 tok)
+- `ProviderBudget.php` — Model — 10 fields, 1 rels (~269 tok)
+- `Role.php` — Model — 6 fields, 1 rels (~242 tok)
 - `SecretRef.php` — Model — table: secret_refs, 8 fields, 2 casts (~115 tok)
+- `SecurityScan.php` — Model — 16 fields, 3 rels (~344 tok)
 - `TaskRun.php` — Model — 10 fields, 8 casts, 2 rels (~229 tok)
 - `Template.php` — Model — 8 fields, 4 casts (~133 tok)
 - `Tenant.php` — Model — 4 fields, 2 casts, 2 rels (~199 tok)
@@ -134,34 +168,43 @@
 - `TestSuite.php` — Model — 8 fields, 2 casts, 1 rels (~111 tok)
 - `Tool.php` — Model — 7 fields, 6 casts, 1 rels (~172 tok)
 - `ToolCall.php` — Model — 9 fields, 4 casts (~115 tok)
-- `User.php` — Model — 3 fields, 1 rels (~214 tok)
+- `User.php` — Model — 3 fields, 2 rels (~461 tok)
 - `Workflow.php` — Model — 11 fields, 4 casts, 4 rels (~298 tok)
 - `WorkflowRun.php` — Model — 14 fields, 14 casts, 3 rels (~309 tok)
 - `WorkflowVersion.php` — Model — 6 fields, 6 casts, 1 rels (~160 tok)
 
 ## backend/app/Providers/
 
-- `AppServiceProvider.php` — Service provider: AppServiceProvider (~144 tok)
+- `AppServiceProvider.php` — AppServiceProvider: register, boot (~508 tok)
 
 ## backend/app/Services/
 
+- `ActivepiecesBridge.php` — Activepieces Integration Bridge (Phase 3). (~1411 tok)
 - `AgentRuntime.php` — Agent runtime — uses ProviderRegistry (Phase 2) so OpenAI / Claude (~424 tok)
 - `ApprovalService.php` — Approval Queue — pause/resume gate for risky tool calls and deployments. (~679 tok)
+- `AuditReportService.php` — Audit report generation, export (CSV/JSON/PDF), and tamper-evident hash chain. (~1616 tok)
 - `DeploymentService.php` — Execute the Phase 2 promotion pipeline: (~1430 tok)
 - `DurableWorkflowEngine.php` — Phase 2 durable workflow engine. (~4816 tok)
 - `McpGateway.php` — Phase-1 MCP Gateway prototype — Tool Registry (DB) + Client Manager (HTTP ping). (~884 tok)
-- `OpaPolicyService.php` — Basic policy engine — Phase 2. (~795 tok)
+- `NetworkPolicyService.php` — Network policy enforcement (Phase 3). (~1033 tok)
+- `OpaPolicyService.php` — Full policy-as-code engine (Phase 2 baseline + Phase 3 expansion). (~2944 tok)
 - `OpenHandsClient.php` — OpenHands Software Agent SDK client (Phase 2). (~786 tok)
+- `PromptInjectionService.php` — Prompt-injection detection (Phase 3 — Should-priority). (~1320 tok)
+- `ProviderBudgetService.php` — Per-tenant model budget enforcement (Phase 3). (~1270 tok)
 - `ProviderRegistry.php` — Model Control Plane (Phase 2 baseline) — routes calls to a configured provider. (~256 tok)
-- `SecretService.php` — Resolve secret references via HashiCorp Vault (KV v2). (~676 tok)
+- `RbacService.php` — Full RBAC/ABAC engine (Phase 3). (~1911 tok)
+- `SecretService.php` — Vault-backed secret management (Phase 2 baseline + Phase 3 hardening). (~2162 tok)
+- `SecurityScannerService.php` — Security Scanner pipeline (Phase 3). (~2862 tok)
 - `TemplateService.php` — Template Manager — create, export (JSON/YAML/ZIP), import (manifest+secret-scan), (~3603 tok)
 - `TestRunnerService.php` — TestRunnerService: execute, runForAsset (~1043 tok)
+- `ToolSandboxService.php` — Tool Sandbox (Phase 3). (~1399 tok)
 - `VersionDiffService.php` — Recursive JSON diff. Returns added/removed/changed. (~570 tok)
 - `WorkflowRuntime.php` — Phase-1 synchronous workflow engine (LangGraph-style state machine in-process). (~1409 tok)
 
 ## backend/app/Services/Providers/
 
 - `ClaudeProvider.php` — ClaudeProvider: name, supportsModel, complete (~543 tok)
+- `GoogleAdkProvider.php` — Google ADK (Agent Development Kit) provider adapter (Phase 3). (~1180 tok)
 - `OpenAiProvider.php` — OpenAiProvider: name, supportsModel, complete (~496 tok)
 
 ## backend/app/Support/
@@ -192,7 +235,7 @@
 - `mail.php` — Declares of (~969 tok)
 - `queue.php` (~1120 tok)
 - `sanctum.php` (~828 tok)
-- `services.php` — Declares of (~278 tok)
+- `services.php` (~358 tok)
 - `session.php` (~2093 tok)
 
 ## backend/database/
@@ -211,14 +254,16 @@
 - `2026_05_19_000001_create_platform_core_tables.php` — Phase 1 / 2 asset model — Tenants, Projects, Users, Agents, MCP Servers, (~3231 tok)
 - `2026_05_19_005628_create_personal_access_tokens_table.php` — Run the migrations. (~231 tok)
 - `2026_05_19_100000_create_phase2_lifecycle_tables.php` — Phase 2 — Lifecycle & Reliability tables (~2585 tok)
+- `2026_05_19_200000_create_phase3_governance_tables.php` — Phase 3 — Enterprise Governance & Integrations tables (~4019 tok)
 
 ## backend/database/seeders/
 
-- `DatabaseSeeder.php` — DatabaseSeeder: run (~2727 tok)
+- `DatabaseSeeder.php` — DatabaseSeeder: run (~2769 tok)
+- `Phase3Seeder.php` — Phase3Seeder: run (~5072 tok)
 
 ## backend/docker/
 
-- `entrypoint.sh` — Laravel 12 dev entrypoint (~1021 tok)
+- `entrypoint.sh` — ------------------------------------------------------------------- (~1030 tok)
 
 ## backend/public/
 
@@ -241,8 +286,8 @@
 
 ## backend/routes/
 
-- `api.php` (~1876 tok)
-- `console.php` (~56 tok)
+- `api.php` (~3175 tok)
+- `console.php` (~85 tok)
 - `web.php` (~29 tok)
 
 ## backend/storage/
@@ -338,7 +383,8 @@
 
 - `ExampleTest.php` — A basic test example. (~96 tok)
 - `PlatformPhase1Test.php` — PlatformPhase1Test: test_health_endpoint, test_login_and_me, test_agent_crud_creates_version_and_audit, test_mcp_health_check + 2 more (~911 tok)
-- `PlatformPhase2Test.php` — PlatformPhase2Test: test_approval_queue_endpoint_returns_paginated, test_approval_gated_workflow_pau (~1669 tok)
+- `PlatformPhase2Test.php` — PlatformPhase2Test: test_approval_queue_endpoint_returns_paginated, test_approval_gated_workflow_pau (~1809 tok)
+- `PlatformPhase3Test.php` — PlatformPhase3Test: test_rbac_roles_endpoint_returns_roles, test_rbac_permissions_endpoint, test_rba (~3010 tok)
 
 ## backend/tests/Unit/
 
@@ -346,9 +392,13 @@
 
 ## docs/
 
-- `PHASE1_CHECKLIST.md` — Phase 1 Completion Checklist (~586 tok)
-- `PHASE2_CHECKLIST.md` — Phase 2 — Lifecycle & Reliability — Completion Checklist (~1596 tok)
+- `OPERATIONS_RUNBOOK.md` — Operations Runbook — Phase 3 (~1152 tok)
+- `PHASE1_CHECKLIST.md` — Phase 1 Completion Checklist (~593 tok)
+- `PHASE2_CHECKLIST.md` — Phase 2 — Lifecycle & Reliability — Completion Checklist (~1590 tok)
 - `PHASE2_MIGRATION.md` — Phase 2 — Migration Guide (~344 tok)
+- `PHASE3_CHECKLIST.md` — Phase 3 — Enterprise Governance & Integrations — Completion Checklist (~1705 tok)
+- `PHASE3_MIGRATION.md` — Phase 3 — Migration Guide (~917 tok)
+- `SOC2_CONTROL_MAPPING.md` — SOC 2 Readiness — Control Mapping Document (~1755 tok)
 
 ## docs/kubernetes/
 
@@ -393,6 +443,10 @@
 
 - `page.tsx` — STATUS_BADGE — renders table (~1733 tok)
 
+## frontend/src/app/(app)/audit-reports/
+
+- `page.tsx` — AuditReportsPage — renders table (~2486 tok)
+
 ## frontend/src/app/(app)/chat/
 
 - `page.tsx` — ChatPage — renders form — uses useState (~1052 tok)
@@ -417,14 +471,34 @@
 
 - `page.tsx` — McpServersPage — renders modal (~2905 tok)
 
+## frontend/src/app/(app)/network-policies/
+
+- `page.tsx` — NetworkPoliciesPage — renders table (~1131 tok)
+
+## frontend/src/app/(app)/opa-policies/
+
+- `page.tsx` — CATEGORIES (~1775 tok)
+
 ## frontend/src/app/(app)/platform/
 
 - `page.tsx` — PlatformUI (~65 tok)
+
+## frontend/src/app/(app)/provider-budgets/
+
+- `page.tsx` — PROVIDER_COLORS — renders table (~1501 tok)
+
+## frontend/src/app/(app)/rbac/
+
+- `page.tsx` — RbacPage (~1692 tok)
 
 ## frontend/src/app/(app)/runs/
 
 - `layout.tsx` — RunsLayout (~71 tok)
 - `page.tsx` — RunsPage — renders table (~3156 tok)
+
+## frontend/src/app/(app)/security-scans/
+
+- `page.tsx` — SEVERITY_COLORS (~1639 tok)
 
 ## frontend/src/app/(app)/templates/
 
@@ -432,7 +506,7 @@
 
 ## frontend/src/app/(app)/workflows/
 
-- `page.tsx` — WorkflowsPage — renders modal — uses useState, useQuery, useMemo, useMutation (~2058 tok)
+- `page.tsx` — WorkflowsPage — renders table, modal (~3492 tok)
 
 ## frontend/src/app/(app)/workflows/[id]/edit/
 
@@ -440,11 +514,11 @@
 
 ## frontend/src/app/(auth)/login/
 
-- `page.tsx` — tenants — renders form — uses useState (~5009 tok)
+- `page.tsx` — tenants — renders form (~5052 tok)
 
 ## frontend/src/components/app-shell/
 
-- `AppShell.tsx` — NAV (~2490 tok)
+- `AppShell.tsx` — NAV (~2644 tok)
 
 ## frontend/src/components/shared/
 
@@ -464,7 +538,7 @@
 
 ## frontend/src/lib/
 
-- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~3307 tok)
+- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~4860 tok)
 - `auth-context.tsx` — AuthContext (~1359 tok)
 
 ## frontend/src/theme/
@@ -473,12 +547,15 @@
 
 ## infra/
 
-- `otel-collector-config.yaml` (~146 tok)
+- `otel-collector-config.yaml` (~135 tok)
 
 ## infra/helm/eamcp/
 
 - `Chart.yaml` (~53 tok)
-- `values.yaml` (~267 tok)
+- `values-dev.yaml` (~488 tok)
+- `values-prod.yaml` (~670 tok)
+- `values-staging.yaml` (~548 tok)
+- `values.yaml` (~556 tok)
 
 ## infra/helm/eamcp/templates/
 
@@ -487,7 +564,12 @@
 
 ## infra/opa/
 
+- `approval.rego` (~432 tok)
+- `deployment.rego` (~440 tok)
 - `eamcp.rego` (~269 tok)
+- `network.rego` (~230 tok)
+- `template_import.rego` (~234 tok)
+- `tenant_isolation.rego` (~165 tok)
 
 ## infra/openhands/
 

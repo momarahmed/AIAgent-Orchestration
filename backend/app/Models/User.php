@@ -28,4 +28,33 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Tenant::class, 'tenant_user')->withPivot('role_id')->withTimestamps();
     }
+
+    public function projects(): BelongsToMany
+    {
+        return $this->belongsToMany(Project::class, 'project_user')->withPivot('role_id')->withTimestamps();
+    }
+
+    public function roleForTenant(int $tenantId): ?Role
+    {
+        $pivot = $this->tenants()->where('tenants.id', $tenantId)->first();
+        if (! $pivot?->pivot?->role_id) {
+            return null;
+        }
+        return Role::find($pivot->pivot->role_id);
+    }
+
+    public function roleForProject(int $projectId): ?Role
+    {
+        $pivot = $this->projects()->where('projects.id', $projectId)->first();
+        if (! $pivot?->pivot?->role_id) {
+            return null;
+        }
+        return Role::find($pivot->pivot->role_id);
+    }
+
+    public function hasPermissionInTenant(string $permission, int $tenantId): bool
+    {
+        $role = $this->roleForTenant($tenantId);
+        return $role?->hasPermission($permission) ?? false;
+    }
 }

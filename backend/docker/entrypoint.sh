@@ -76,9 +76,16 @@ done
 echo "[entrypoint] Running migrations..."
 php artisan migrate --force || true
 
-# Seed if seeders exist (only on first boot, when no data)
+# Seed demo data on first boot, or re-seed when users were wiped (e.g. migrate:fresh).
 if [ -f "database/seeders/DatabaseSeeder.php" ]; then
+  NEED_SEED=0
   if [ ! -f "storage/.seeded" ]; then
+    NEED_SEED=1
+  elif ! php artisan tinker --execute="exit(\\App\\Models\\User::count() > 0 ? 0 : 1);" 2>/dev/null; then
+    echo "[entrypoint] No users in database — re-running seeders..."
+    NEED_SEED=1
+  fi
+  if [ "$NEED_SEED" = "1" ]; then
     echo "[entrypoint] Running database seeders..."
     php artisan db:seed --force || true
     mkdir -p storage && touch storage/.seeded

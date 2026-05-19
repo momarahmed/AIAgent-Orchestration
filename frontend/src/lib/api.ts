@@ -183,6 +183,8 @@ export const versionsApi = {
   agent: (id: number) => api.get(`/api/agents/${id}/versions`).then((r) => r.data.data),
   agentDiff: (id: number, a: number, b: number) => api.get(`/api/agents/${id}/versions/${a}/diff/${b}`).then((r) => r.data),
   agentRollback: (id: number, version: number) => api.post(`/api/agents/${id}/versions/${version}/rollback`).then((r) => r.data),
+  mcp: (id: number) => api.get(`/api/mcp-servers/${id}/versions`).then((r) => r.data.data),
+  mcpRollback: (id: number, version: number) => api.post(`/api/mcp-servers/${id}/versions/${version}/rollback`).then((r) => r.data),
 };
 
 export const templateLifecycleApi = {
@@ -223,4 +225,73 @@ export const metricsApi = {
 
 export const auditApi = {
   list: (params: Record<string, any> = {}) => api.get("/api/audit", { params }).then((r) => r.data.data),
+};
+
+// ─── Phase 3: RBAC/ABAC ─────────────────────────────────────────────
+export const rbacApi = {
+  roles: () => api.get("/api/rbac/roles").then((r) => r.data),
+  createRole: (payload: any) => api.post("/api/rbac/roles", payload).then((r) => r.data),
+  updateRole: (id: number, payload: any) => api.put(`/api/rbac/roles/${id}`, payload).then((r) => r.data),
+  permissions: () => api.get("/api/rbac/permissions").then((r) => r.data),
+  myPermissions: (params: Record<string, any> = {}) => api.get("/api/rbac/my-permissions", { params }).then((r) => r.data),
+  assignTenantRole: (payload: any) => api.post("/api/rbac/assign-tenant-role", payload).then((r) => r.data),
+  assignProjectRole: (payload: any) => api.post("/api/rbac/assign-project-role", payload).then((r) => r.data),
+  abacPolicies: (params: Record<string, any> = {}) => api.get("/api/rbac/abac-policies", { params }).then((r) => r.data),
+  createAbacPolicy: (payload: any) => api.post("/api/rbac/abac-policies", payload).then((r) => r.data),
+  updateAbacPolicy: (id: number, payload: any) => api.put(`/api/rbac/abac-policies/${id}`, payload).then((r) => r.data),
+  deleteAbacPolicy: (id: number) => api.delete(`/api/rbac/abac-policies/${id}`),
+};
+
+// ─── Phase 3: OPA Policies ──────────────────────────────────────────
+export const opaPoliciesApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/opa-policies", { params }).then((r) => r.data),
+  get: (id: number) => api.get(`/api/opa-policies/${id}`).then((r) => r.data),
+  create: (payload: any) => api.post("/api/opa-policies", payload).then((r) => r.data),
+  update: (id: number, payload: any) => api.put(`/api/opa-policies/${id}`, payload).then((r) => r.data),
+  remove: (id: number) => api.delete(`/api/opa-policies/${id}`),
+  activate: (id: number) => api.post(`/api/opa-policies/${id}/activate`).then((r) => r.data),
+  disable: (id: number) => api.post(`/api/opa-policies/${id}/disable`).then((r) => r.data),
+  dryRun: (id: number, input: any) => api.post(`/api/opa-policies/${id}/dry-run`, { input }).then((r) => r.data),
+  lint: (regoCode: string) => api.post("/api/opa-policies/lint", { rego_code: regoCode }).then((r) => r.data),
+  library: (params: Record<string, any> = {}) => api.get("/api/opa-policies/library", { params }).then((r) => r.data),
+};
+
+// ─── Phase 3: Audit Reports ─────────────────────────────────────────
+export const auditReportsApi = {
+  events: (params: Record<string, any> = {}) => api.get("/api/audit-reports/events", { params }).then((r) => r.data),
+  assetHistory: (subjectType: string, subjectId: number) =>
+    api.get("/api/audit-reports/asset-history", { params: { subject_type: subjectType, subject_id: subjectId } }).then((r) => r.data),
+  templates: () => api.get("/api/audit-reports/templates").then((r) => r.data),
+  export: (payload: any) => api.post("/api/audit-reports/export", payload).then((r) => r.data),
+  exports: (params: Record<string, any> = {}) => api.get("/api/audit-reports/exports", { params }).then((r) => r.data),
+  download: (id: number) => api.get(`/api/audit-reports/exports/${id}/download`, { responseType: "blob" }),
+};
+
+// ─── Phase 3: Security Scans ────────────────────────────────────────
+export const securityScansApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/security-scans", { params }).then((r) => r.data),
+  get: (id: number) => api.get(`/api/security-scans/${id}`).then((r) => r.data),
+  trigger: (payload: any) => api.post("/api/security-scans/trigger", payload).then((r) => r.data),
+  scanDeployment: (id: number, targetRef: string) => api.post(`/api/security-scans/deployment/${id}`, { target_ref: targetRef }).then((r) => r.data),
+  promotionGate: (id: number) => api.get(`/api/security-scans/deployment/${id}/gate`).then((r) => r.data),
+  summary: (params: Record<string, any> = {}) => api.get("/api/security-scans/summary", { params }).then((r) => r.data),
+};
+
+// ─── Phase 3: Network Policies ──────────────────────────────────────
+export const networkPoliciesApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/network-policies", { params }).then((r) => r.data),
+  create: (payload: any) => api.post("/api/network-policies", payload).then((r) => r.data),
+  update: (id: number, payload: any) => api.put(`/api/network-policies/${id}`, payload).then((r) => r.data),
+  remove: (id: number) => api.delete(`/api/network-policies/${id}`),
+  check: (payload: any) => api.post("/api/network-policies/check", payload).then((r) => r.data),
+};
+
+// ─── Phase 3: Provider Budgets ──────────────────────────────────────
+export const providerBudgetsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/provider-budgets", { params }).then((r) => r.data),
+  create: (payload: any) => api.post("/api/provider-budgets", payload).then((r) => r.data),
+  update: (id: number, payload: any) => api.put(`/api/provider-budgets/${id}`, payload).then((r) => r.data),
+  remove: (id: number) => api.delete(`/api/provider-budgets/${id}`),
+  check: (payload: any) => api.post("/api/provider-budgets/check", payload).then((r) => r.data),
+  summary: (tenantId: number) => api.get("/api/provider-budgets/summary", { params: { tenant_id: tenantId } }).then((r) => r.data),
 };

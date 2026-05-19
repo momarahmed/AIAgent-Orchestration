@@ -11,8 +11,10 @@ use App\Models\TestSuite;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowVersion;
+use App\Models\WorkflowRun;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\TestCase;
 
 class PlatformPhase2Test extends TestCase
@@ -171,5 +173,18 @@ class PlatformPhase2Test extends TestCase
             ])->assertOk();
 
         $this->assertSame('dev', $resp->json('environment'));
+    }
+
+    public function test_scheduled_workflow_dispatch_command(): void
+    {
+        $wf = Workflow::where('slug', 'hello-world')->firstOrFail();
+        $wf->update([
+            'trigger_type' => 'schedule',
+            'schedule_config' => ['cron' => '* * * * *', 'environment' => 'dev'],
+        ]);
+
+        Artisan::call('workflows:dispatch-schedules');
+
+        $this->assertGreaterThan(0, WorkflowRun::where('workflow_id', $wf->id)->count());
     }
 }

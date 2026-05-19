@@ -2,13 +2,16 @@ global:
   image:
     registry: ghcr.io/eamcp
     pullPolicy: IfNotPresent
+  environment: production
+  networkPolicies:
+    enabled: true
 
 backend:
   enabled: true
-  replicaCount: 2
+  replicaCount: 3
   image:
     repository: backend
-    tag: "1.2.0"
+    tag: "1.3.0"
   service:
     port: 8000
   env:
@@ -16,21 +19,40 @@ backend:
     OPA_URL: http://opa.eamcp.svc.cluster.local:8181
     VAULT_ADDR: http://vault.eamcp.svc.cluster.local:8200
     TEMPORAL_HOST: temporal-frontend.eamcp.svc.cluster.local:7233
+    ACTIVEPIECES_URL: http://activepieces.eamcp.svc.cluster.local:80
+    QDRANT_URL: http://qdrant.eamcp.svc.cluster.local:6333
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
 
 frontend:
   enabled: true
   replicaCount: 2
   image:
     repository: frontend
-    tag: "1.2.0"
+    tag: "1.3.0"
   service:
     port: 3000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 mysql:
   enabled: true
   auth:
     rootPassword: "change-me-in-production"
     database: eamcp
+  primary:
+    persistence:
+      size: 50Gi
 
 redis:
   enabled: true
@@ -38,9 +60,11 @@ redis:
 opa:
   enabled: true
   replicaCount: 2
+  policies:
+    syncInterval: 60s
 
 vault:
-  enabled: false  # Use managed cloud key vault in production
+  enabled: false
 
 temporal:
   enabled: true
@@ -53,3 +77,37 @@ temporal:
       replicaCount: 2
     worker:
       replicaCount: 3
+
+activepieces:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: activepieces/activepieces
+    tag: "0.30.0"
+
+qdrant:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    size: 20Gi
+
+sandbox:
+  namespace: eamcp-sandbox
+  securityContext:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+securityScanner:
+  trivy:
+    enabled: true
+    severity: "CRITICAL,HIGH"
+  grype:
+    enabled: true
+  secretScanner:
+    enabled: true
+  imageSigningEnabled: true

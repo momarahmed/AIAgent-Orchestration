@@ -13,9 +13,9 @@ Maps [PRD/01-phase-foundation-core-platform.md](../PRD/01-phase-foundation-core-
 | 5 | Run workflow synchronously | ✅ | `POST /api/workflows/{id}/run`; `WorkflowRuntime` |
 | 6 | Run history with nodes + tool calls | ✅ | `/runs` UI; `RunController` + `tool_calls` |
 | 7 | `docker compose up` + smoke workflow | ✅ | `docker-compose.yml`; seeded Hello World workflow |
-| 8 | OTel traces in collector | ✅ | `otel-collector` service; backend logs `otel.trace.workflow_run` |
+| 8 | OTel traces in collector | ✅ | `otel-collector` service (debug exporter); backend logs `otel.trace.workflow_run` |
 | 9 | K8s design docs | ✅ | [docs/kubernetes/README.md](./kubernetes/README.md) |
-| 10 | Backend tests ≥70% CRUD/run coverage | ⚠️ | `tests/Feature/PlatformPhase1Test.php` — run `php artisan test` in backend container |
+| 10 | Backend tests ≥70% CRUD/run coverage | ✅ | `PlatformPhase1Test` (6 tests) + `PlatformPhase2Test` (10 tests) — 18 passed via `php artisan test` |
 
 ## UX requirements
 

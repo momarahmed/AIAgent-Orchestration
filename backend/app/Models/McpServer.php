@@ -16,12 +16,15 @@ class McpServer extends Model
         'tenant_id', 'project_id', 'name', 'slug', 'description',
         'transport', 'runtime', 'endpoint', 'auth_method',
         'secret_refs', 'status', 'health', 'last_health_check_at',
-        'current_version_id',
+        'current_version_id', 'requires_sandbox', 'sandbox_config', 'network_policy',
     ];
 
     protected $casts = [
         'secret_refs' => 'array',
+        'sandbox_config' => 'array',
+        'network_policy' => 'array',
         'last_health_check_at' => 'datetime',
+        'requires_sandbox' => 'boolean',
     ];
 
     public function tenant(): BelongsTo

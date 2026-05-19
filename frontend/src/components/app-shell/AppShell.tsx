@@ -19,10 +19,16 @@ const NAV: NavItem[] = [
   { href: "/templates",   label: "Templates",        icon: "📋", group: "build" },
   { href: "/codegen",     label: "Code Agent",       icon: "🛠️", group: "build" },
 
-  { href: "/runs",        label: "Run History",      icon: "🧪", group: "ops" },
-  { href: "/approvals",   label: "Approvals",        icon: "✅", group: "ops" },
-  { href: "/deployments", label: "Deployments",      icon: "🚀", group: "ops" },
-  { href: "/admin",       label: "Admin Console",    icon: "🛡️", group: "ops" },
+  { href: "/runs",            label: "Run History",        icon: "🧪", group: "ops" },
+  { href: "/approvals",       label: "Approvals",          icon: "✅", group: "ops" },
+  { href: "/deployments",     label: "Deployments",        icon: "🚀", group: "ops" },
+  { href: "/audit-reports",   label: "Audit Reports",      icon: "📑", group: "ops" },
+  { href: "/security-scans",  label: "Security Scanner",   icon: "🔒", group: "ops" },
+  { href: "/rbac",            label: "RBAC / Access",      icon: "🔐", group: "ops" },
+  { href: "/opa-policies",    label: "Policy Engine",      icon: "📜", group: "ops" },
+  { href: "/network-policies",label: "Network Policies",   icon: "🌐", group: "ops" },
+  { href: "/provider-budgets",label: "Provider Budgets",   icon: "💰", group: "ops" },
+  { href: "/admin",           label: "Admin Console",      icon: "🛡️", group: "ops" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -113,8 +119,8 @@ export function AppShell({ children }: { children: ReactNode }) {
         {!collapsed && (
           <div className="m-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-3 text-xs">
             <div className="text-slate-500">Phase</div>
-            <div className="mt-1 font-semibold text-white">Phase 2 — Lifecycle &amp; Reliability</div>
-            <div className="mt-2 text-slate-500">v1.2.0 · {process.env.NEXT_PUBLIC_BRAND_NAME || "EAMCP"}</div>
+            <div className="mt-1 font-semibold text-white">Phase 3 — Enterprise Governance</div>
+            <div className="mt-2 text-slate-500">v1.3.0 · {process.env.NEXT_PUBLIC_BRAND_NAME || "EAMCP"}</div>
           </div>
         )}
       </aside>

@@ -4,7 +4,7 @@
 |---|---|---|---|
 | UX-005 | Debug failed runs from UI | ✅ | `/runs` page → "Debug node" + "Replay" + "Resume"/"Cancel" |
 | UX-006 | Import/export templates | ✅ | `/templates` page → Import JSON, Export ZIP/JSON |
-| UX-008 | Compare asset versions | ✅ | Agents `Versions` dialog (diff + rollback); workflows API |
+| UX-008 | Compare asset versions | ✅ | Agents + Workflows `Versions` dialog (diff + rollback); MCP versions API + rollback |
 | AG-002 | Create agent from template | ✅ | `POST /api/templates/{id}/instantiate` |
 | AG-005 | Debug agent with test prompts | ✅ | Agents `Debug` dialog · `POST /api/agents/{id}/debug` |
 | AG-006 | Deploy agent to environment | ✅ | `/deployments` page · `DeploymentService` pipeline |
@@ -27,7 +27,7 @@
 | WF-007 | Copy workflow | ✅ | `POST /api/workflows/{id}/copy` |
 | WF-008 | Save workflow as template | ✅ | from-asset |
 | WF-009 | Import/export workflow template | ✅ | export+import |
-| WF-011 | Schedule cron workflows | 🟡 | Schedule fields on Workflow model + Temporal service available; cron dispatcher binding deferred to Phase 3 production rollout |
+| WF-011 | Schedule cron workflows | ✅ | `schedule_config` on Workflow; `workflows:dispatch-schedules` + `scheduler` compose service |
 | WF-012 | Webhook/event triggers | 🟡 | `trigger_type` field; routing UI in Phase 3 |
 | WF-013 | Approval nodes | ✅ | `approval` node type · `executeApproval` |
 | WF-014 | Retry / error handling | ✅ | `retry_policy` per node + `error_handler` node + `runNodeWithRetry` |
@@ -49,7 +49,7 @@
 3. ✅ Copy never carries secret values — `CopyController::copyMcp` strips `secret_refs` + `endpoint`; agent and workflow copies inherit only structural config.
 4. ✅ Save → export ZIP → import → instantiate, secrets absent — covered by `test_template_export_and_import_roundtrip`.
 5. ✅ Promote dev → test → staging → prod blocked unless approved + vault-backed — covered by `test_deployment_to_prod_blocks_non_vault_secrets` and the `awaiting_approval` branch in `DeploymentService::execute`.
-6. 🟡 Cron + survives kill — engine uses checkpoint persistence; full Temporal cron worker is provisioned via the design entry but production cron rollout is part of Phase 3.
+6. ✅ Cron dispatch + survives kill — `workflows:dispatch-schedules` + checkpoint resume in `DurableWorkflowEngine`; production Temporal Schedules remain Phase 3.
 7. ✅ Approval node pauses; approval resumes within 5 s — verified live (run #3 approve-resume cycle in this session).
 8. ✅ OpenHands "generate MCP server" returns runnable scaffold + tests — `test_codegen_stub_returns_generated_files`.
 9. ✅ OPA blocks tool calls exceeding agent max risk until approval — verified live (L3 `create_feature` paused workflow until approval #2).
@@ -67,7 +67,7 @@
 ## Tests
 
 * `backend/tests/Feature/PlatformPhase1Test.php` — 6 tests, 24 assertions ✅
-* `backend/tests/Feature/PlatformPhase2Test.php` — 9 tests, 26 assertions ✅
+* `backend/tests/Feature/PlatformPhase2Test.php` — 10 tests, 27 assertions ✅
 
 ## Live smoke verified in this session
 
