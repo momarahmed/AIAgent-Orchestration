@@ -57,4 +57,22 @@ class User extends Authenticatable
         $role = $this->roleForTenant($tenantId);
         return $role?->hasPermission($permission) ?? false;
     }
+
+    /**
+     * Convenience accessor used by Phase 5 controllers / SDKs.
+     * Resolves the user's active tenant id from the `X-Tenant-Id` header
+     * (when present and the user belongs to that tenant) or falls back to
+     * the first attached tenant. Returns null only for users with no tenant.
+     */
+    public function getTenantIdAttribute(): ?int
+    {
+        $headerId = request()?->header('X-Tenant-Id');
+        if ($headerId) {
+            $ids = $this->tenants()->pluck('tenants.id')->toArray();
+            if (in_array((int) $headerId, $ids, true)) {
+                return (int) $headerId;
+            }
+        }
+        return $this->tenants()->value('tenants.id');
+    }
 }

@@ -111,6 +111,25 @@ class OpaPolicyService
         return $this->evaluateOpaPath('eamcp/tenant_isolation', $isolationContext);
     }
 
+    /**
+     * Phase 4 — generic evaluator for arbitrary OPA package/rule paths.
+     * Normalizes the response to {allowed:bool, reason?:string} so meta-
+     * agents, A2A, memory, and bridges can share one decision shape.
+     */
+    public function evaluate(string $path, array $input): array
+    {
+        $raw = $this->evaluateOpaPath(str_replace('/', '.', trim($path, '/')), $input);
+        $allowed = $raw['allow'] ?? $raw['allow_read'] ?? $raw['allow_action'] ?? null;
+        if ($allowed === null && isset($raw['fallback']) && $raw['fallback']) {
+            $allowed = true;
+        }
+        return [
+            'allowed' => (bool) ($allowed ?? false),
+            'reason'  => is_array($raw['deny'] ?? null) ? implode('; ', $raw['deny']) : ($raw['reason'] ?? null),
+            'raw'     => $raw,
+        ];
+    }
+
     // ─── Phase 3: policy CRUD and lifecycle ──────────────────────────
 
     public function createPolicy(array $data, int $userId): OpaPolicy

@@ -2,10 +2,18 @@
 # Enterprise AI MCP Management Platform — Local Dev Stack
 # Stack: Next.js (latest) + MUI / Laravel 12 / MySQL 8.4 / Redis 7
 # Host: 127.0.0.1
-#   Frontend  -> http://127.0.0.1:3020
-#   Backend   -> http://127.0.0.1:8089
-#   MySQL     -> 127.0.0.1:3308
-#   Redis     -> 127.0.0.1:6382
+#   Frontend     -> http://127.0.0.1:3020
+#   Backend      -> http://127.0.0.1:8089
+#   MySQL        -> 127.0.0.1:3308
+#   Redis        -> 127.0.0.1:6382
+#   ─ Phase 4 additions ─
+#   Redpanda     -> 127.0.0.1:9092 (Kafka API), 9644 (admin), 8083 (console)
+#   Qdrant       -> 127.0.0.1:6333/6334  (already running since Phase 3)
+#   Ollama       -> 127.0.0.1:11434
+#   Prometheus   -> 127.0.0.1:9090
+#   Grafana      -> 127.0.0.1:3030
+#   Loki         -> 127.0.0.1:3100
+#   A2A Gateway  -> http://127.0.0.1:8089/api/a2a/* (in-process Laravel)
 # =====================================================================
 
 services:
@@ -98,11 +106,36 @@ services:
       TEMPORAL_HOST: temporal:7233
       TEMPORAL_NAMESPACE: default
       APPROVAL_TIMEOUT_DAYS: "7"
+      # ─── Phase 4 ──────────────────────────────────────────────────
+      EVENT_BUS_DRIVER: ${EVENT_BUS_DRIVER:-kafka}
+      KAFKA_BROKERS: redpanda:9092
+      KAFKA_CLIENT_ID: eamcp-backend
+      QDRANT_URL: http://qdrant:6333
+      QDRANT_API_KEY: ${QDRANT_API_KEY:-}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_DEFAULT_MODEL: ${OLLAMA_DEFAULT_MODEL:-llama3.2:1b}
+      A2A_GATEWAY_PUBLIC_URL: http://127.0.0.1:8089/api/a2a
+      A2A_GATEWAY_SHARED_SECRET: ${A2A_GATEWAY_SHARED_SECRET:-eamcp-a2a-dev}
+      PROMETHEUS_URL: http://prometheus:9090
+      LOKI_URL: http://loki:3100
+      META_AGENT_AUTONOMY: ${META_AGENT_AUTONOMY:-supervised}
+      DIFY_BRIDGE_URL: ${DIFY_BRIDGE_URL:-}
+      FLOWISE_BRIDGE_URL: ${FLOWISE_BRIDGE_URL:-}
+      SIM_BRIDGE_URL: ${SIM_BRIDGE_URL:-}
+      # ─── AI Workflow Studio (Flowise) — see /workflow-studio in the UI ─
+      FLOWISE_API_URL: ${FLOWISE_API_URL:-http://flowise:3000}
+      FLOWISE_API_KEY: ${FLOWISE_API_KEY:-}
+      FLOWISE_EMBED_URL: ${FLOWISE_EMBED_URL:-http://127.0.0.1:3500}
+      FLOWISE_WEBHOOK_SECRET: ${FLOWISE_WEBHOOK_SECRET:-eamcp-flowise-dev}
+      CREWAI_RUNTIME_ENABLED: ${CREWAI_RUNTIME_ENABLED:-true}
     ports:
       - "127.0.0.1:8089:8000"
     volumes:
       - ./backend:/var/www/html:cached
       - eamcp_backend_vendor:/var/www/html/vendor
+      # Live-overlay the entrypoint so dev edits to docker/entrypoint.sh
+      # take effect on `docker compose restart backend` (no rebuild needed).
+      - ./backend/docker/entrypoint.sh:/usr/local/bin/entrypoint.sh:ro
     networks:
       - eamcp-net
 
@@ -159,6 +192,8 @@ services:
       NEXT_PUBLIC_APP_URL: http://127.0.0.1:3020
       NEXT_PUBLIC_BRAND_NAME: "Enterprise AI MCP Platform"
       INTERNAL_API_URL: http://backend:8000
+      # The browser embeds Flowise via this public URL (host-mapped).
+      NEXT_PUBLIC_FLOWISE_EMBED_URL: ${FLOWISE_EMBED_URL:-http://127.0.0.1:3500}
     ports:
       - "127.0.0.1:3020:3000"
     volumes:
@@ -312,6 +347,196 @@ services:
     networks:
       - eamcp-net
 
+  # ===================================================================
+  # PHASE 4 SERVICES
+  # ===================================================================
+
+  # -------------------------------------------------------------------
+  # Redpanda — Kafka-compatible event bus (single-node dev cluster)
+  # PRD §13/§22 — handles agent.events, tool.events, workflow.events,
+  # run.status, deployment.events, approval.events at 10× Phase 3 scale.
+  # -------------------------------------------------------------------
+  redpanda:
+    image: redpandadata/redpanda:v24.2.7
+    container_name: eamcp-redpanda
+    restart: unless-stopped
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092
+      - --pandaproxy-addr=0.0.0.0:8082
+      - --advertise-pandaproxy-addr=redpanda:8082
+      - --rpc-addr=0.0.0.0:33145
+      - --advertise-rpc-addr=redpanda:33145
+    ports:
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:9644:9644"
+    volumes:
+      - eamcp_redpanda_data:/var/lib/redpanda/data
+    networks:
+      - eamcp-net
+
+  redpanda-console:
+    image: redpandadata/console:v2.7.2
+    container_name: eamcp-redpanda-console
+    restart: unless-stopped
+    depends_on:
+      - redpanda
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+    ports:
+      - "127.0.0.1:8083:8080"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Event Bus Consumer — Laravel worker that drains Kafka topics into
+  # the platform (workflow triggers, agent events, observability).
+  # -------------------------------------------------------------------
+  event-consumer:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eamcp-event-consumer
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      redpanda:
+        condition: service_started
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-eamcp}
+      DB_USERNAME: ${DB_USERNAME:-eamcp}
+      DB_PASSWORD: ${DB_PASSWORD:-eamcp_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      EVENT_BUS_DRIVER: kafka
+      KAFKA_BROKERS: redpanda:9092
+    volumes:
+      - ./backend:/var/www/html:cached
+      - eamcp_backend_vendor:/var/www/html/vendor
+    command: ["php", "artisan", "eventbus:consume", "--all"]
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Ollama — local LLM runtime (PRD §24.5 local LLM routing)
+  # Pull models with:
+  #   docker exec eamcp-ollama ollama pull llama3.2:1b
+  # -------------------------------------------------------------------
+  ollama:
+    image: ollama/ollama:0.4.4
+    container_name: eamcp-ollama
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - eamcp_ollama_data:/root/.ollama
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Prometheus — metrics scraping (PRD §22.2 dashboards)
+  # -------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: eamcp-prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - eamcp_prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Loki — log aggregation
+  # -------------------------------------------------------------------
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: eamcp-loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - eamcp_loki_data:/loki
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Grafana — pre-provisioned dashboards (PRD §22.2)
+  # admin / eamcp-dev
+  # -------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: eamcp-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: eamcp-dev
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - eamcp_grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3030:3000"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # FlowiseAI — visual LLM/agent flow builder, powers /workflow-studio.
+  # Backend talks to it server-to-server at http://flowise:3000;
+  # browser embeds the canvas at http://127.0.0.1:3500.
+  # Docs: https://github.com/FlowiseAI/Flowise
+  # -------------------------------------------------------------------
+  flowise:
+    image: flowiseai/flowise:2.2.0
+    container_name: eamcp-flowise
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      DATABASE_TYPE: sqlite
+      DATABASE_PATH: /root/.flowise
+      APIKEY_PATH: /root/.flowise
+      LOG_PATH: /root/.flowise/logs
+      SECRETKEY_PATH: /root/.flowise
+      # The Laravel backend authenticates with this API key when proxying
+      # writes (create/update/delete chatflows). Frontend never sees it.
+      FLOWISE_USERNAME: ${FLOWISE_USERNAME:-admin}
+      FLOWISE_PASSWORD: ${FLOWISE_PASSWORD:-eamcp-flowise-dev}
+      CORS_ORIGINS: "http://127.0.0.1:3020,http://localhost:3020"
+      IFRAME_ORIGINS: "http://127.0.0.1:3020,http://localhost:3020"
+    ports:
+      - "127.0.0.1:3500:3000"
+    volumes:
+      - eamcp_flowise_data:/root/.flowise
+    networks:
+      - eamcp-net
+
 volumes:
   eamcp_mysql_data:
   eamcp_redis_data:
@@ -320,6 +545,12 @@ volumes:
   eamcp_frontend_next:
   eamcp_temporal_pg:
   eamcp_qdrant_data:
+  eamcp_redpanda_data:
+  eamcp_ollama_data:
+  eamcp_prometheus_data:
+  eamcp_loki_data:
+  eamcp_grafana_data:
+  eamcp_flowise_data:
 
 networks:
   eamcp-net:

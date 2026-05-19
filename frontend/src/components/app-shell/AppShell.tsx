@@ -5,7 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 
-type NavItem = { href: string; label: string; icon: string; group: "core" | "build" | "ops" };
+import { useI18n } from "@/lib/i18n-context";
+
+type NavItem = { href: string; label: string; icon: string; group: "core" | "build" | "platform" | "ops" | "phase5" };
 
 const NAV: NavItem[] = [
   { href: "/chat",        label: "Chat",             icon: "💬", group: "core" },
@@ -16,8 +18,19 @@ const NAV: NavItem[] = [
   { href: "/agents",      label: "Agent Studio",     icon: "🤖", group: "build" },
   { href: "/mcp-servers", label: "MCP Studio",       icon: "🧩", group: "build" },
   { href: "/workflows",   label: "Workflow Builder", icon: "🔁", group: "build" },
+  { href: "/workflow-studio", label: "Workflow",     icon: "🪢", group: "build" },
   { href: "/templates",   label: "Templates",        icon: "📋", group: "build" },
   { href: "/codegen",     label: "Code Agent",       icon: "🛠️", group: "build" },
+
+  { href: "/meta-agents", label: "Meta-Agents",      icon: "🧠", group: "platform" },
+  { href: "/models",      label: "Model Control",    icon: "🪄", group: "platform" },
+  { href: "/prompts",     label: "Prompt Registry",  icon: "📝", group: "platform" },
+  { href: "/memory",      label: "Memory & RAG",     icon: "🧬", group: "platform" },
+  { href: "/a2a",         label: "A2A Gateway",      icon: "🔗", group: "platform" },
+  { href: "/bridges",     label: "Framework Bridges",icon: "🌉", group: "platform" },
+  { href: "/event-bus",   label: "Event Bus",        icon: "📡", group: "platform" },
+  { href: "/migrations",  label: "Migration Imports",icon: "📥", group: "platform" },
+  { href: "/observability",label:"Observability",    icon: "📈", group: "platform" },
 
   { href: "/runs",            label: "Run History",        icon: "🧪", group: "ops" },
   { href: "/approvals",       label: "Approvals",          icon: "✅", group: "ops" },
@@ -29,6 +42,16 @@ const NAV: NavItem[] = [
   { href: "/network-policies",label: "Network Policies",   icon: "🌐", group: "ops" },
   { href: "/provider-budgets",label: "Provider Budgets",   icon: "💰", group: "ops" },
   { href: "/admin",           label: "Admin Console",      icon: "🛡️", group: "ops" },
+
+  // Phase 5 — Marketplace, Scale & Productization
+  { href: "/marketplace",         label: "Marketplace",         icon: "🛒", group: "phase5" },
+  { href: "/analytics",           label: "Advanced Analytics",  icon: "📈", group: "phase5" },
+  { href: "/cost-governance",     label: "Cost Governance",     icon: "💵", group: "phase5" },
+  { href: "/compliance",          label: "Compliance",          icon: "📋", group: "phase5" },
+  { href: "/continuous-security", label: "Continuous Security", icon: "🛡️", group: "phase5" },
+  { href: "/gitops",              label: "GitOps + HA/DR",      icon: "🌐", group: "phase5" },
+  { href: "/autogen-import",      label: "Legacy Importer",     icon: "📥", group: "phase5" },
+  { href: "/operations",          label: "Operations",          icon: "📡", group: "phase5" },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -45,9 +68,13 @@ export function AppShell({ children }: { children: ReactNode }) {
     return {
       core: NAV.filter((n) => n.group === "core"),
       build: NAV.filter((n) => n.group === "build"),
+      platform: NAV.filter((n) => n.group === "platform"),
       ops: NAV.filter((n) => n.group === "ops"),
+      phase5: NAV.filter((n) => n.group === "phase5"),
     };
   }, []);
+
+  const i18n = useI18n();
 
   if (auth.loading || !auth.user) {
     return (
@@ -85,11 +112,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
-          {(["core", "build", "ops"] as const).map((g) => (
+          {(["core", "build", "platform", "ops", "phase5"] as const).map((g) => (
             <div key={g}>
               {!collapsed && (
                 <div className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                  {g === "core" ? "Overview" : g === "build" ? "Build" : "Operate"}
+                  {g === "core" ? "Overview" : g === "build" ? "Build" : g === "platform" ? "Multi-Agent Platform" : g === "ops" ? "Operate" : "Marketplace · Scale · v1.0"}
                 </div>
               )}
               <ul className="space-y-1">
@@ -118,9 +145,22 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         {!collapsed && (
           <div className="m-3 rounded-2xl border border-slate-800 bg-slate-900/80 p-3 text-xs">
-            <div className="text-slate-500">Phase</div>
-            <div className="mt-1 font-semibold text-white">Phase 3 — Enterprise Governance</div>
-            <div className="mt-2 text-slate-500">v1.3.0 · {process.env.NEXT_PUBLIC_BRAND_NAME || "EAMCP"}</div>
+            <div className="text-slate-500">Release</div>
+            <div className="mt-1 font-semibold text-white">v1.0 — Phase 5</div>
+            <div className="mt-1 text-[10px] text-slate-500">Marketplace · Scale · Productized</div>
+            <div className="mt-2 flex items-center gap-1 text-slate-500">
+              <select
+                value={i18n.locale}
+                onChange={(e) => i18n.setLocale(e.target.value)}
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-2 py-1 text-[11px] text-slate-200"
+              >
+                {i18n.available.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.name} ({l.code}{l.rtl ? " · RTL" : ""})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         )}
       </aside>

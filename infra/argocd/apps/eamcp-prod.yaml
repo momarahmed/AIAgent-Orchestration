@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eamcp-prod
+  namespace: argocd
+  annotations:
+    # Phase 5 PRD risk mitigation: production sync requires Security Approver
+    # + Platform Owner per OPA policy. Auto-sync is intentionally disabled.
+    eamcp.io/sync-approval-required: "true"
+spec:
+  project: eamcp
+  source:
+    repoURL: https://github.com/example/eamcp-platform.git
+    targetRevision: main
+    path: infra/helm/eamcp
+    helm:
+      valueFiles:
+        - values.yaml
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: eamcp-prd
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

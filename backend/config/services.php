@@ -35,4 +35,12 @@ return [
         'provider' => env('GUARDRAIL_PROVIDER', 'openai'),
         'model'    => env('GUARDRAIL_MODEL', 'gpt-4o-mini'),
     ],
+
+    // AI Workflow Studio — FlowiseAI integration (see /workflow-studio).
+    'flowise' => [
+        'url'             => env('FLOWISE_API_URL'),
+        'api_key'         => env('FLOWISE_API_KEY'),
+        'embed_url'       => env('FLOWISE_EMBED_URL'),
+        'webhook_secret'  => env('FLOWISE_WEBHOOK_SECRET'),
+    ],
 ];

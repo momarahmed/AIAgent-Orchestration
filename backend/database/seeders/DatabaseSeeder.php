@@ -210,5 +210,7 @@ class DatabaseSeeder extends Seeder
 
         // Phase 3 seeder
         $this->call(Phase3Seeder::class);
+        $this->call(Phase4Seeder::class);
+        $this->call(Phase5Seeder::class);
     }
 }

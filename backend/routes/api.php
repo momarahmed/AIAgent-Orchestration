@@ -1,6 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\AgentController;
+use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\ComplianceExportController;
+use App\Http\Controllers\Api\ContinuousScannerController;
+use App\Http\Controllers\Api\GitOpsController;
+use App\Http\Controllers\Api\LegacyImportController;
+use App\Http\Controllers\Api\LocaleController;
+use App\Http\Controllers\Api\MarketplaceController;
+use App\Http\Controllers\Api\PortfolioBudgetController;
 use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\AuditController;
 use App\Http\Controllers\Api\AuditReportController;
@@ -27,11 +35,27 @@ use App\Http\Controllers\Api\TestController;
 use App\Http\Controllers\Api\ToolController;
 use App\Http\Controllers\Api\VersionController;
 use App\Http\Controllers\Api\WorkflowController;
+use App\Http\Controllers\Api\A2AController;
+use App\Http\Controllers\Api\BridgeController;
+use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\EventBusController;
+use App\Http\Controllers\Api\FlowiseAgentController;
+use App\Http\Controllers\Api\MemoryController;
+use App\Http\Controllers\Api\MetaAgentController;
+use App\Http\Controllers\Api\MigrationController;
+use App\Http\Controllers\Api\ModelRegistryController;
+use App\Http\Controllers\Api\ObservabilityController;
+use App\Http\Controllers\Api\PromptController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', [MetricsController::class, 'health']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/register', [AuthController::class, 'register']);
+
+// ─── Phase 4: Unauthenticated observability + A2A inbound ───────────
+// Prometheus scrapes these so they must be reachable without bearer auth.
+Route::get('/observability/metrics', [ObservabilityController::class, 'metrics']);
+Route::post('/a2a/inbound/{partnerId}', [A2AController::class, 'inbound']);
 
 Route::middleware(['auth:sanctum', 'tenant.isolation'])->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -193,4 +217,202 @@ Route::middleware(['auth:sanctum', 'tenant.isolation'])->group(function () {
         Route::put('/{providerBudget}', [ProviderBudgetController::class, 'update']);
         Route::delete('/{providerBudget}', [ProviderBudgetController::class, 'destroy']);
     });
+
+    // ═════════════════════════════════════════════════════════════════
+    // PHASE 4 — Advanced Multi-Agent Platform (PRD §9, §12, §13, §22)
+    // ═════════════════════════════════════════════════════════════════
+
+    // ─── Phase 4: Model Control Plane ───────────────────────────────
+    Route::prefix('models')->group(function () {
+        Route::get('/',                 [ModelRegistryController::class, 'models']);
+        Route::post('/',                [ModelRegistryController::class, 'storeModel']);
+        Route::get('/{slug}',           [ModelRegistryController::class, 'showModel']);
+        Route::post('/route/plan',      [ModelRegistryController::class, 'plan']);
+        Route::post('/route/complete',  [ModelRegistryController::class, 'complete']);
+        Route::get('/routing/rules',    [ModelRegistryController::class, 'rules']);
+        Route::post('/routing/rules',   [ModelRegistryController::class, 'storeRule']);
+    });
+
+    // ─── Phase 4: Prompt Registry ───────────────────────────────────
+    Route::prefix('prompts')->group(function () {
+        Route::get('/',                          [PromptController::class, 'index']);
+        Route::post('/',                         [PromptController::class, 'store']);
+        Route::get('/{prompt}',                  [PromptController::class, 'show']);
+        Route::post('/{prompt}/versions',        [PromptController::class, 'newVersion']);
+        Route::post('/{prompt}/versions/{version}/activate', [PromptController::class, 'activate']);
+        Route::get('/{prompt}/versions/{a}/diff/{b}', [PromptController::class, 'diff']);
+        Route::post('/{prompt}/render',          [PromptController::class, 'render']);
+        Route::post('/{prompt}/evaluate',        [PromptController::class, 'evaluate']);
+        Route::get('/{prompt}/leaderboard',      [PromptController::class, 'leaderboard']);
+    });
+
+    // ─── Phase 4: Memory / RAG ──────────────────────────────────────
+    Route::prefix('memory')->group(function () {
+        Route::get('/collections',                       [MemoryController::class, 'collections']);
+        Route::post('/collections',                      [MemoryController::class, 'createCollection']);
+        Route::get('/collections/{collection}/items',    [MemoryController::class, 'items']);
+        Route::post('/collections/{collection}/remember',[MemoryController::class, 'remember']);
+        Route::post('/collections/{collection}/retrieve',[MemoryController::class, 'retrieve']);
+        Route::delete('/items/{item}',                   [MemoryController::class, 'forget']);
+        Route::get('/short-term/{sessionId}',            [MemoryController::class, 'shortTerm']);
+    });
+
+    // ─── Phase 4: A2A Gateway ───────────────────────────────────────
+    Route::prefix('a2a')->group(function () {
+        Route::get('/partners',              [A2AController::class, 'partners']);
+        Route::post('/partners',             [A2AController::class, 'storePartner']);
+        Route::put('/partners/{partner}',    [A2AController::class, 'updatePartner']);
+        Route::post('/send',                 [A2AController::class, 'send']);
+        Route::get('/messages',              [A2AController::class, 'messages']);
+    });
+
+    // ─── Phase 4: Meta-Agents ───────────────────────────────────────
+    Route::prefix('meta-agents')->group(function () {
+        Route::get('/',                  [MetaAgentController::class, 'index']);
+        Route::get('/registry',          [MetaAgentController::class, 'registry']);
+        Route::post('/route',            [MetaAgentController::class, 'route']);
+        Route::post('/run',              [MetaAgentController::class, 'start']);
+        Route::post('/autopilot',        [MetaAgentController::class, 'autopilot']);
+        Route::get('/{run}',             [MetaAgentController::class, 'show']);
+        Route::post('/{run}/resume',     [MetaAgentController::class, 'resume']);
+    });
+
+    // ─── Phase 4: Migration (n8n / Flowise / Dify / JSON / YAML) ───
+    Route::prefix('migrations')->group(function () {
+        Route::get('/',           [MigrationController::class, 'index']);
+        Route::post('/import',    [MigrationController::class, 'import']);
+        Route::get('/{import}',   [MigrationController::class, 'show']);
+    });
+
+    // ─── Phase 4: Cross-framework Bridges ───────────────────────────
+    Route::prefix('bridges')->group(function () {
+        Route::get('/frameworks',                       [BridgeController::class, 'frameworks']);
+        Route::get('/connections',                      [BridgeController::class, 'connections']);
+        Route::post('/connections',                     [BridgeController::class, 'storeConnection']);
+        Route::post('/connections/{connection}/call',   [BridgeController::class, 'call']);
+        Route::post('/connections/{connection}/toggle', [BridgeController::class, 'toggle']);
+    });
+
+    // ─── Phase 4: Event Bus ─────────────────────────────────────────
+    Route::prefix('event-bus')->group(function () {
+        Route::get('/status',         [EventBusController::class, 'status']);
+        Route::post('/publish',       [EventBusController::class, 'publish']);
+        Route::get('/subscriptions',  [EventBusController::class, 'subscriptions']);
+        Route::post('/subscriptions', [EventBusController::class, 'storeSubscription']);
+        Route::get('/log',            [EventBusController::class, 'log']);
+    });
+
+    // ─── Phase 4: Advanced Observability ───────────────────────────
+    Route::prefix('observability')->group(function () {
+        Route::get('/metrics.json',         [ObservabilityController::class, 'metricsJson']);
+        Route::get('/timeline/{run}',       [ObservabilityController::class, 'timeline']);
+        Route::post('/runs/{run}/replay',   [ObservabilityController::class, 'replay']);
+        Route::get('/knowledge-graph',      [ObservabilityController::class, 'knowledgeGraph']);
+    });
+
+    // ─── Phase 4: Comments / Collaboration ──────────────────────────
+    Route::prefix('comments')->group(function () {
+        Route::get('/',                       [CommentController::class, 'index']);
+        Route::post('/',                      [CommentController::class, 'store']);
+        Route::post('/{comment}/resolve',     [CommentController::class, 'resolve']);
+        Route::delete('/{comment}',           [CommentController::class, 'destroy']);
+    });
+
+    // ─── Phase 5: Template Marketplace ──────────────────────────────
+    Route::prefix('marketplace')->group(function () {
+        Route::get('/listings', [MarketplaceController::class, 'index']);
+        Route::get('/search', [MarketplaceController::class, 'search']);
+        Route::get('/installs', [MarketplaceController::class, 'installs']);
+        Route::get('/publisher-summary', [MarketplaceController::class, 'publisherSummary']);
+        Route::post('/publish', [MarketplaceController::class, 'publish']);
+        Route::get('/listings/{listing}', [MarketplaceController::class, 'show']);
+        Route::post('/listings/{listing}/install', [MarketplaceController::class, 'install']);
+        Route::post('/listings/{listing}/rate', [MarketplaceController::class, 'rate']);
+    });
+
+    // ─── Phase 5: Advanced Analytics ────────────────────────────────
+    Route::prefix('analytics')->group(function () {
+        Route::get('/usage', [AnalyticsController::class, 'usage']);
+        Route::get('/cost', [AnalyticsController::class, 'cost']);
+        Route::get('/reliability', [AnalyticsController::class, 'reliability']);
+        Route::get('/template-adoption', [AnalyticsController::class, 'templateAdoption']);
+        Route::get('/quality-scores', [AnalyticsController::class, 'qualityScores']);
+        Route::post('/quality-scores/recompute', [AnalyticsController::class, 'recompute']);
+    });
+
+    // ─── Phase 5: Portfolio Cost Governance ─────────────────────────
+    Route::prefix('cost-governance')->group(function () {
+        Route::get('/budgets', [PortfolioBudgetController::class, 'index']);
+        Route::post('/budgets', [PortfolioBudgetController::class, 'store']);
+        Route::put('/budgets/{portfolioBudget}', [PortfolioBudgetController::class, 'update']);
+        Route::delete('/budgets/{portfolioBudget}', [PortfolioBudgetController::class, 'destroy']);
+        Route::post('/chargeback', [PortfolioBudgetController::class, 'chargeback']);
+        Route::get('/chargeback', [PortfolioBudgetController::class, 'chargebackHistory']);
+        Route::post('/recommendations', [PortfolioBudgetController::class, 'recommendations']);
+    });
+
+    // ─── Phase 5: Multi-Compliance Audit Exports ────────────────────
+    Route::prefix('compliance')->group(function () {
+        Route::get('/frameworks', [ComplianceExportController::class, 'frameworks']);
+        Route::get('/exports', [ComplianceExportController::class, 'index']);
+        Route::post('/exports', [ComplianceExportController::class, 'store']);
+        Route::get('/exports/{complianceExport}', [ComplianceExportController::class, 'show']);
+        Route::get('/exports/{complianceExport}/download', [ComplianceExportController::class, 'download']);
+    });
+
+    // ─── Phase 5: Continuous Security Scanning ──────────────────────
+    Route::prefix('continuous-security')->group(function () {
+        Route::get('/snapshots', [ContinuousScannerController::class, 'snapshots']);
+        Route::post('/snapshots', [ContinuousScannerController::class, 'takeSnapshot']);
+        Route::get('/diffs', [ContinuousScannerController::class, 'diffs']);
+        Route::post('/diffs/latest', [ContinuousScannerController::class, 'diffLatest']);
+        Route::get('/findings', [ContinuousScannerController::class, 'findings']);
+        Route::post('/findings', [ContinuousScannerController::class, 'reportFinding']);
+        Route::post('/findings/{finding}/transition', [ContinuousScannerController::class, 'transitionFinding']);
+        Route::get('/due-dates', [ContinuousScannerController::class, 'dueDates']);
+    });
+
+    // ─── Phase 5: GitOps + HA/DR ────────────────────────────────────
+    Route::prefix('gitops')->group(function () {
+        Route::get('/environments', [GitOpsController::class, 'environments']);
+        Route::post('/environments', [GitOpsController::class, 'registerEnvironment']);
+        Route::post('/environments/{environment}/sync', [GitOpsController::class, 'sync']);
+        Route::get('/environments/{environment}/drift', [GitOpsController::class, 'drift']);
+        Route::get('/environments/{environment}/syncs', [GitOpsController::class, 'syncs']);
+        Route::get('/regions', [GitOpsController::class, 'regionStatus']);
+        Route::post('/failover-drill', [GitOpsController::class, 'failoverDrill']);
+    });
+
+    // ─── Phase 5: Legacy Imports (AutoGen / Tesslate / n8n / Flowise / Dify / CrewAI)
+    Route::prefix('legacy-imports')->group(function () {
+        Route::get('/', [LegacyImportController::class, 'index']);
+        Route::post('/', [LegacyImportController::class, 'store']);
+        Route::get('/{legacyImport}', [LegacyImportController::class, 'show']);
+    });
+
+    // ─── AI Workflow Studio — FlowiseAI integration (UI: /workflow-studio)
+    Route::prefix('flowise')->group(function () {
+        Route::get('/health',                [FlowiseAgentController::class, 'health']);
+        Route::get('/chatflows',             [FlowiseAgentController::class, 'chatflows']);
+        Route::post('/import',               [FlowiseAgentController::class, 'import']);
+        Route::post('/export',               [FlowiseAgentController::class, 'export']);
+        Route::post('/sync',                 [FlowiseAgentController::class, 'syncTenant']);
+
+        Route::get('/agents',                [FlowiseAgentController::class, 'index']);
+        Route::post('/agents',               [FlowiseAgentController::class, 'store']);
+        Route::get('/agents/{agent}',        [FlowiseAgentController::class, 'show']);
+        Route::patch('/agents/{agent}',      [FlowiseAgentController::class, 'update']);
+        Route::put('/agents/{agent}',        [FlowiseAgentController::class, 'update']);
+        Route::delete('/agents/{agent}',     [FlowiseAgentController::class, 'destroy']);
+        Route::post('/agents/{agent}/run',     [FlowiseAgentController::class, 'run'])->middleware('prompt.injection');
+        Route::post('/agents/{agent}/sync',    [FlowiseAgentController::class, 'sync']);
+        Route::post('/agents/{agent}/duplicate',[FlowiseAgentController::class, 'duplicate']);
+        Route::get('/agents/{agent}/runs',     [FlowiseAgentController::class, 'runs']);
+        Route::get('/agents/{agent}/embed',    [FlowiseAgentController::class, 'embed']);
+    });
 });
+
+// ─── Phase 5: Localization (public — used at app boot) ──────────────
+Route::get('/locales', [LocaleController::class, 'index']);
+Route::get('/locales/{code}', [LocaleController::class, 'dictionary']);
+Route::middleware(['auth:sanctum', 'tenant.isolation'])->post('/locales/{code}', [LocaleController::class, 'upsert']);

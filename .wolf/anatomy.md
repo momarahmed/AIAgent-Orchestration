@@ -1,13 +1,13 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T03:50:35.314Z
-> Files: 314 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T19:34:12.842Z
+> Files: 498 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
 - `.gitignore` — Git ignore rules (~239 tok)
 - `CLAUDE.md` — OpenWolf (~57 tok)
-- `docker-compose.yml` — Docker Compose services (~2914 tok)
+- `docker-compose.yml` — Docker Compose services (~5302 tok)
 - `README.md` — Project documentation (~2187 tok)
 
 ## .claude/
@@ -76,7 +76,7 @@
 - `.editorconfig` — Editor configuration (~68 tok)
 - `.gitattributes` — Git attributes (~50 tok)
 - `.gitignore` — Git ignore rules (~76 tok)
-- `.phpunit.result.cache` (~158 tok)
+- `.phpunit.result.cache` (~1871 tok)
 - `artisan` — Laravel CLI entry point (~114 tok)
 - `composer.json` — PHP package manifest (~824 tok)
 - `Dockerfile` — Docker container definition (~284 tok)
@@ -87,10 +87,13 @@
 
 ## backend/app/Console/Commands/
 
-- `DispatchScheduledWorkflows.php` — DispatchScheduledWorkflows: handle (~795 tok)
+- `ConsumeEventBus.php` — EventBus consumer worker (Phase 4 — PRD §13, RT-* requirements). (~1254 tok)
+- `DispatchScheduledWorkflows.php` — Artisan command: DispatchScheduledWorkflows (~795 tok)
+- `EnsureAdmin.php` — Idempotently provision (or reset) the demo admin / builder / viewer (~1087 tok)
 
 ## backend/app/Contracts/
 
+- `EventBusContract.php` — Event Bus abstraction (Phase 4 — PRD §13). (~280 tok)
 - `ModelProvider.php` — Interface: ModelProvider (3 methods) (~115 tok)
 - `WorkflowEngine.php` — WorkflowEngine — abstract contract that hides the underlying engine (~219 tok)
 
@@ -100,21 +103,40 @@
 
 ## backend/app/Http/Controllers/Api/
 
+- `A2AController.php` — A2A Gateway HTTP surface (PRD §13.2 — Phase 4). (~955 tok)
 - `AgentController.php` — AG-013 — agent execution history via task runs on agent nodes. (~1776 tok)
+- `AnalyticsController.php` — usage, cost, reliability, templateAdoption, qualityScores + 1 more (~471 tok)
 - `ApprovalController.php` — index, show, approve, reject (~378 tok)
 - `AuditController.php` — index (~192 tok)
 - `AuditReportController.php` — Paginated audit events with filtering. (~1148 tok)
 - `AuthController.php` — login, register, me, logout (~690 tok)
+- `BridgeController.php` — frameworks, connections, storeConnection, call, toggle (~591 tok)
 - `ChatController.php` — Phase-1 Chat UI backend — single-turn prompt execution with run record (UX-002). (~1060 tok)
 - `CodegenController.php` — generateMcp, show, index (~351 tok)
+- `CommentController.php` — index, store, resolve, destroy (~419 tok)
+- `ComplianceExportController.php` — frameworks, index, store, show, download (~698 tok)
+- `ContinuousScannerController.php` — snapshots, takeSnapshot, diffs, diffLatest, findings + 3 more (~866 tok)
 - `CopyController.php` — copyAgent, copyMcp, copyWorkflow (~1340 tok)
 - `DebugController.php` — debugAgent, debugTool, debugWorkflowNode, replayRun, resumeRun + 1 more (~754 tok)
 - `DeploymentController.php` — index, show, store, approve, rollback (~560 tok)
+- `EventBusController.php` — status, publish, subscriptions, storeSubscription, log (~655 tok)
+- `FlowiseAgentController.php` — Backend surface for the AI Workflow Studio (FlowiseAI integration). (~3801 tok)
+- `GitOpsController.php` — environments, registerEnvironment, sync, drift, syncs + 2 more (~647 tok)
+- `LegacyImportController.php` — index, show, store (~386 tok)
+- `LocaleController.php` — index, dictionary, upsert (~307 tok)
+- `MarketplaceController.php` — Marketplace endpoints (Phase 5). (~1523 tok)
 - `McpServerController.php` — index, store, show, update, destroy + 1 more (~1871 tok)
+- `MemoryController.php` — collections, createCollection, items, remember, retrieve + 2 more (~890 tok)
+- `MetaAgentController.php` — Meta-Agent HTTP surface (PRD §12.2 + Scenario 27.1 — Phase 4). (~1051 tok)
 - `MetricsController.php` — Aggregate KPI / dashboard metrics for the Platform Console. (~924 tok)
+- `MigrationController.php` — index, show, import (~388 tok)
+- `ModelRegistryController.php` — Model Control Plane Controller (Phase 4 — PRD §9.2). (~996 tok)
 - `NetworkPolicyController.php` — index, store, update, destroy, check + 1 more (~985 tok)
+- `ObservabilityController.php` — metrics, metricsJson, timeline, replay, knowledgeGraph (~421 tok)
 - `OpaPolicyController.php` — index, show, store, update, destroy + 5 more (~996 tok)
+- `PortfolioBudgetController.php` — index, store, update, destroy, chargeback + 2 more (~1047 tok)
 - `ProjectController.php` — index, store, show, update, destroy (~588 tok)
+- `PromptController.php` — index, show, store, newVersion, activate + 4 more (~986 tok)
 - `ProviderBudgetController.php` — index, store, update, destroy, check + 1 more (~808 tok)
 - `RbacController.php` — roles, createRole, updateRole, permissions, assignTenantRole + 6 more (~1671 tok)
 - `RunController.php` — index, show (~235 tok)
@@ -127,40 +149,84 @@
 - `ToolController.php` — index, store, update, destroy (~631 tok)
 - `VersionController.php` — agentVersions, workflowVersions, mcpVersions, diffAgent, diffWorkflow + 3 more (~914 tok)
 - `WorkflowController.php` — index, store, show, update, destroy + 1 more (~1653 tok)
+- `FlowiseAgentController.php` — AI Workflow Studio (Flowise) CRUD + run + sync + import/export (~2400 tok)
 
 ## backend/app/Http/Middleware/
 
-- `EnforceRbac.php` — Phase 3 RBAC middleware — resolves tenant/project from route, checks permission via RbacService (~600 tok)
 - `EnforceRbac.php` — Usage in routes: ->middleware('rbac:agents.create') (~691 tok)
-- `EnsureTenantIsolation.php` — Phase 3 tenant isolation — blocks cross-tenant access (~350 tok)
 - `EnsureTenantIsolation.php` — Verifies that the authenticated user belongs to the tenant referenced (~415 tok)
-- `PromptInjectionFilter.php` — Phase 3 prompt-injection filter on chat/workflow routes (~400 tok)
 - `PromptInjectionFilter.php` — Scans prompt/input fields for injection patterns. (~447 tok)
 
 ## backend/app/Models/
 
-- `AbacPolicy.php` — Model — 10 fields, 2 rels (~184 tok)
-- `ActivepiecesConnection.php` — Model — 10 fields, 2 rels (~193 tok)
+- `A2AMessage.php` — Model — table: a2a_messages, 16 fields, 4 casts (~138 tok)
+- `A2APartner.php` — Model — table: a2a_partners, 12 fields, 6 casts, 1 rels (~187 tok)
+- `AbacPolicy.php` — Model — 10 fields, 6 casts, 2 rels (~184 tok)
+- `ActivepiecesConnection.php` — Model — 10 fields, 6 casts, 2 rels (~193 tok)
 - `Agent.php` — Model — 10 fields, 2 casts, 4 rels (~289 tok)
+- `AgentQualityScore.php` — Model — 8 fields, 12 casts (~157 tok)
 - `AgentVersion.php` — Model — 10 fields, 8 casts, 1 rels (~194 tok)
+- `AnalyticsSnapshot.php` — Model — 7 fields, 6 casts (~98 tok)
 - `Approval.php` — Model — 14 fields, 8 casts (~182 tok)
+- `AssetComment.php` — Model — 9 fields, 6 casts, 2 rels (~183 tok)
 - `AuditEvent.php` — Model — 10 fields, 2 casts (~116 tok)
-- `AuditExport.php` — Model — 12 fields, 3 rels (~271 tok)
-- `AuditReportTemplate.php` — Model — 7 fields (~98 tok)
+- `AuditExport.php` — Model — 12 fields, 12 casts, 3 rels (~271 tok)
+- `AuditReportTemplate.php` — Model — 7 fields, 6 casts (~98 tok)
+- `BridgeConnection.php` — Model — 9 fields, 6 casts (~110 tok)
+- `BridgeExecution.php` — Model — 9 fields, 6 casts, 1 rels (~154 tok)
+- `ChargebackReport.php` — Model — 7 fields, 8 casts, 1 rels (~157 tok)
 - `CodegenJob.php` — Model — 12 fields, 8 casts (~128 tok)
+- `ComplianceExport.php` — Model — 12 fields, 12 casts, 1 rels (~206 tok)
+- `ComplianceFramework.php` — Model — 5 fields, 4 casts (~84 tok)
+- `CostRecommendation.php` — Model — 7 fields, 2 casts (~96 tok)
 - `Deployment.php` — Model — 15 fields, 10 casts, 1 rels (~199 tok)
-- `McpServer.php` — Model — 17 fields, 4 rels (~346 tok)
+- `EventLog.php` — Model — table: event_log, 11 fields, 8 casts (~135 tok)
+- `EventSubscription.php` — Model — 7 fields, 6 casts (~102 tok)
+- `FlowiseAgent.php` — Model — flowise_agents, 13 fields, 5 casts, 4 rels (~280 tok)
+- `FlowiseRun.php` — Model — flowise_runs, 14 fields, 6 casts, 2 rels (~210 tok)
+- `FlowiseSync.php` — Model — flowise_syncs, 7 fields, 2 casts, 1 rels (~120 tok)
+- `FlowiseAgent.php` — Model — 16 fields, 5 rels (~379 tok)
+- `FlowiseRun.php` — Model — 16 fields, 2 rels (~269 tok)
+- `FlowiseSync.php` — Model — 8 fields, 1 rels (~176 tok)
+- `GitopsEnvironment.php` — Model — table: gitops_environments, 12 fields, 4 casts, 1 rels (~175 tok)
+- `GitopsSync.php` — Model — table: gitops_syncs, 7 fields, 4 casts, 1 rels (~159 tok)
+- `KnowledgeGraphEdge.php` — Model — 4 fields, 2 casts (~67 tok)
+- `KnowledgeGraphNode.php` — Model — 6 fields, 2 casts (~71 tok)
+- `LegacyImport.php` — Model — 9 fields, 8 casts (~134 tok)
+- `Locale.php` — Model — 4 fields, 4 casts, 1 rels (~120 tok)
+- `LocaleTranslation.php` — Model — 4 fields, 1 rels (~95 tok)
+- `MarketplaceInstall.php` — Model — 9 fields, 4 casts, 3 rels (~217 tok)
+- `MarketplaceListing.php` — Model — 22 fields, 16 casts, 6 rels (~449 tok)
+- `MarketplaceRating.php` — Model — 5 fields, 2 rels (~134 tok)
+- `MarketplaceSigningKey.php` — Model — 5 fields, 2 casts (~78 tok)
+- `MarketplaceVersion.php` — Model — 11 fields, 8 casts, 1 rels (~188 tok)
+- `McpServer.php` — Model — 17 fields, 10 casts, 4 rels (~346 tok)
 - `McpServerVersion.php` — Model — 4 fields, 2 casts, 1 rels (~131 tok)
-- `NetworkAllowlist.php` — Model — 10 fields, 2 rels (~175 tok)
-- `OpaPolicy.php` — Model — 13 fields, 3 rels (~260 tok)
-- `OpaPolicyVersion.php` — Model — 6 fields, 1 rels (~135 tok)
+- `MemoryCollection.php` — Model — 9 fields, 2 casts, 2 rels (~162 tok)
+- `MemoryItem.php` — Model — 11 fields, 4 casts, 1 rels (~159 tok)
+- `MetaAgentAction.php` — Model — 13 fields, 10 casts, 2 rels (~215 tok)
+- `MetaAgentRun.php` — Model — 15 fields, 12 casts, 3 rels (~257 tok)
+- `MigrationImport.php` — Model — 11 fields, 8 casts, 1 rels (~171 tok)
+- `ModelRecord.php` — Model — table: models, 12 fields, 12 casts (~160 tok)
+- `ModelRoutingRule.php` — Model — 6 fields, 6 casts, 1 rels (~132 tok)
+- `NetworkAllowlist.php` — Model — 10 fields, 4 casts, 2 rels (~175 tok)
+- `OpaPolicy.php` — Model — 13 fields, 6 casts, 3 rels (~260 tok)
+- `OpaPolicyVersion.php` — Model — 6 fields, 4 casts, 1 rels (~135 tok)
 - `Permission.php` — Model — 4 fields, 1 rels (~101 tok)
+- `PortfolioBudget.php` — Model — 11 fields, 12 casts, 2 rels (~386 tok)
 - `Project.php` — Model — 5 fields, 2 casts, 4 rels (~239 tok)
-- `PromptInjectionLog.php` — Model — 10 fields, 2 rels (~175 tok)
-- `ProviderBudget.php` — Model — 10 fields, 1 rels (~269 tok)
-- `Role.php` — Model — 6 fields, 1 rels (~242 tok)
+- `Prompt.php` — Model — 8 fields, 5 rels (~248 tok)
+- `PromptEvaluation.php` — Model — 9 fields, 8 casts (~127 tok)
+- `PromptInjectionLog.php` — Model — 10 fields, 2 casts, 2 rels (~175 tok)
+- `PromptVersion.php` — Model — 8 fields, 4 casts, 1 rels (~131 tok)
+- `ProviderBudget.php` — Model — 10 fields, 10 casts, 1 rels (~269 tok)
+- `RegionHealth.php` — Model — table: region_health, 6 fields, 6 casts (~125 tok)
+- `Role.php` — Model — 6 fields, 6 casts, 1 rels (~242 tok)
+- `RunReplay.php` — Model — 7 fields, 4 casts, 2 rels (~165 tok)
+- `SbomDiff.php` — Model — 6 fields, 4 casts, 2 rels (~183 tok)
+- `SbomSnapshot.php` — Model — 4 fields, 2 casts (~74 tok)
 - `SecretRef.php` — Model — table: secret_refs, 8 fields, 2 casts (~115 tok)
-- `SecurityScan.php` — Model — 16 fields, 3 rels (~344 tok)
+- `SecurityScan.php` — Model — 16 fields, 16 casts, 3 rels (~344 tok)
 - `TaskRun.php` — Model — 10 fields, 8 casts, 2 rels (~229 tok)
 - `Template.php` — Model — 8 fields, 4 casts (~133 tok)
 - `Tenant.php` — Model — 4 fields, 2 casts, 2 rels (~199 tok)
@@ -168,31 +234,64 @@
 - `TestSuite.php` — Model — 8 fields, 2 casts, 1 rels (~111 tok)
 - `Tool.php` — Model — 7 fields, 6 casts, 1 rels (~172 tok)
 - `ToolCall.php` — Model — 9 fields, 4 casts (~115 tok)
-- `User.php` — Model — 3 fields, 2 rels (~461 tok)
+- `User.php` — Convenience accessor used by Phase 5 controllers / SDKs. (~646 tok)
+- `VulnerabilityFinding.php` — Model — 11 fields, 4 casts (~231 tok)
 - `Workflow.php` — Model — 11 fields, 4 casts, 4 rels (~298 tok)
-- `WorkflowRun.php` — Model — 14 fields, 14 casts, 3 rels (~309 tok)
+- `WorkflowRun.php` — Model — 15 fields, 14 casts, 3 rels (~312 tok)
 - `WorkflowVersion.php` — Model — 6 fields, 6 casts, 1 rels (~160 tok)
 
 ## backend/app/Providers/
 
-- `AppServiceProvider.php` — AppServiceProvider: register, boot (~508 tok)
+- `AppServiceProvider.php` — Service provider: AppServiceProvider (~1100 tok)
 
 ## backend/app/Services/
 
+- `A2AGatewayService.php` — A2A Gateway Service (PRD §13.2 / §13.3 — Phase 4) (~2536 tok)
 - `ActivepiecesBridge.php` — Activepieces Integration Bridge (Phase 3). (~1411 tok)
 - `AgentRuntime.php` — Agent runtime — uses ProviderRegistry (Phase 2) so OpenAI / Claude (~424 tok)
+- `AnalyticsService.php` — Phase 5 advanced analytics. (~2344 tok)
 - `ApprovalService.php` — Approval Queue — pause/resume gate for risky tool calls and deployments. (~679 tok)
 - `AuditReportService.php` — Audit report generation, export (CSV/JSON/PDF), and tamper-evident hash chain. (~1616 tok)
+- `AutogenImporterService.php` — Phase 5 — AutoGen / legacy import adapter. (~2528 tok)
+- `BridgeRegistry.php` — Bridge Registry (PRD §24.5 — Phase 4). (~446 tok)
+- `CommentService.php` — Comments / Collaboration Service (UX-009 — Phase 4). (~825 tok)
+- `ComplianceExportService.php` — Multi-compliance audit export packs (Phase 5 Feature 7). (~2967 tok)
+- `ContinuousScannerService.php` — Continuous security scanning (Phase 5 Feature 8). (~1965 tok)
 - `DeploymentService.php` — Execute the Phase 2 promotion pipeline: (~1430 tok)
 - `DurableWorkflowEngine.php` — Phase 2 durable workflow engine. (~4816 tok)
+- `EmbeddingService.php` — Embedding service (PRD §9.2 — Phase 4). (~522 tok)
+- `EventBus.php` — EventBus façade (Phase 4 — PRD §13). (~759 tok)
+- `FlowiseService.php` — AI Workflow Studio Flowise client + 2-way sync engine (~2200 tok)
+- `FlowiseService.php` — FlowiseService — central HTTP client + two-way sync engine for the (~3755 tok)
+- `GitOpsService.php` — Phase 5 — GitOps integration (Argo CD / Flux). (~1926 tok)
+- `InProcessEventBus.php` — Redis-Streams / in-process EventBus (Phase 2 baseline, Phase 4 fallback). (~701 tok)
+- `IntentRouterService.php` — Intent Router (PRD §27.1 anchor scenario — Phase 4). (~892 tok)
+- `KafkaEventBus.php` — Kafka / Redpanda event bus implementation (Phase 4). (~1795 tok)
+- `KnowledgeGraphService.php` — Knowledge Graph Service (PRD §9.2 — Phase 4). (~725 tok)
+- `LocalizationService.php` — Phase 5 — Localization service. (~584 tok)
+- `MarketplaceService.php` — Template Marketplace orchestrator. (~3510 tok)
+- `MarketplaceSignatureService.php` — Marketplace artifact signing — cosign / Sigstore–style HMAC stub. (~933 tok)
 - `McpGateway.php` — Phase-1 MCP Gateway prototype — Tool Registry (DB) + Client Manager (HTTP ping). (~884 tok)
+- `MemoryService.php` — Memory Service (PRD §9.2 / §17 — Phase 4) (~1681 tok)
+- `MetaAgentOrchestrator.php` — Meta-Agent Orchestrator (PRD §8.2 / §12.2 — Phase 4). (~2007 tok)
+- `MetaAgentReviewService.php` — Phase 4/5 meta-agents: Documentation, QA/Test, Security Review. (~1389 tok)
+- `MigrationService.php` — Migration Service (PRD §12.2 / §24.5 — Phase 4). (~2861 tok)
+- `ModelRegistryService.php` — Model Registry (PRD §9.2 / §17 / §24.4 — Phase 4) (~445 tok)
+- `ModelRouter.php` — Model Router (PRD §9.2 — Phase 4) (~2010 tok)
 - `NetworkPolicyService.php` — Network policy enforcement (Phase 3). (~1033 tok)
-- `OpaPolicyService.php` — Full policy-as-code engine (Phase 2 baseline + Phase 3 expansion). (~2944 tok)
+- `ObservabilityService.php` — Observability Service (PRD §22 — Phase 4). (~1315 tok)
+- `OpaPolicyService.php` — Full policy-as-code engine (Phase 2 baseline + Phase 3 expansion). (~3166 tok)
 - `OpenHandsClient.php` — OpenHands Software Agent SDK client (Phase 2). (~786 tok)
+- `PortfolioCostService.php` — Portfolio-scale cost governance. (~1515 tok)
+- `PromptEvaluationService.php` — Prompt Evaluation Service (PRD §9.2, AC-5 — Phase 4) (~1471 tok)
 - `PromptInjectionService.php` — Prompt-injection detection (Phase 3 — Should-priority). (~1320 tok)
+- `PromptRegistryService.php` — Prompt Registry (PRD §9.2, §24.4 — Phase 4) (~1200 tok)
 - `ProviderBudgetService.php` — Per-tenant model budget enforcement (Phase 3). (~1270 tok)
-- `ProviderRegistry.php` — Model Control Plane (Phase 2 baseline) — routes calls to a configured provider. (~256 tok)
+- `ProviderRegistry.php` — Provider Registry — the runtime adapter map. (~471 tok)
+- `QdrantClient.php` — Qdrant REST client (PRD §9.2 — Phase 4). (~1400 tok)
+- `RagSearchService.php` — Lightweight RAG-style search for marketplace listings. (~1130 tok)
 - `RbacService.php` — Full RBAC/ABAC engine (Phase 3). (~1911 tok)
+- `ReplayService.php` — Replay Service (PRD §22 / OBS-006 — Phase 4). (~719 tok)
 - `SecretService.php` — Vault-backed secret management (Phase 2 baseline + Phase 3 hardening). (~2162 tok)
 - `SecurityScannerService.php` — Security Scanner pipeline (Phase 3). (~2862 tok)
 - `TemplateService.php` — Template Manager — create, export (JSON/YAML/ZIP), import (manifest+secret-scan), (~3603 tok)
@@ -201,10 +300,34 @@
 - `VersionDiffService.php` — Recursive JSON diff. Returns added/removed/changed. (~570 tok)
 - `WorkflowRuntime.php` — Phase-1 synchronous workflow engine (LangGraph-style state machine in-process). (~1409 tok)
 
+## backend/app/Services/Bridges/
+
+- `BridgeAdapter.php` — Base class for Phase 4 cross-framework bridges (Dify / Flowise / SIM / CrewAI). (~664 tok)
+- `CrewAiBridge.php` — CrewAI Template Runtime (PRD §24.5.13 — Phase 4). (~776 tok)
+- `DifyBridge.php` — Dify Bridge (PRD §24.5.4 — Phase 4). (~399 tok)
+- `FlowiseBridge.php` — Flowise Bridge (PRD §24.5.3 — Phase 4). (~355 tok)
+- `SimBridge.php` — SIM Bridge (PRD §24.5.1 — Phase 4). (~308 tok)
+
+## backend/app/Services/MetaAgents/
+
+- `AgentBuilderAgent.php` — Agent Builder Agent (PRD §12.2 — Phase 4). (~935 tok)
+- `BaseMetaAgent.php` — Base contract for all Phase 4 meta-agents. (~297 tok)
+- `DevOpsDeploymentAgent.php` — DevOps Deployment Agent (PRD §12.2 — Phase 4). (~860 tok)
+- `DocumentationAgent.php` — Documentation Agent (PRD §12.2 — Phase 4). (~1023 tok)
+- `GovernanceAgent.php` — Governance Agent (PRD §12.2 — Phase 4). (~460 tok)
+- `McpBuilderAgent.php` — MCP Builder Agent (PRD §12.2 — Phase 4). (~1105 tok)
+- `MigrationAgent.php` — Migration Agent (PRD §12.2 — Phase 4). (~454 tok)
+- `PlatformArchitectAgent.php` — Platform Architect Agent (PRD §12.2 — Phase 4). (~1094 tok)
+- `QaTestAgent.php` — QA / Test Agent (PRD §12.2 — Phase 4). (~565 tok)
+- `SecurityReviewAgent.php` — Security Review Agent (PRD §12.2 — Phase 4). (~556 tok)
+- `TemplateManagerAgent.php` — Template Manager Agent (PRD §12.2 — Phase 4). (~605 tok)
+- `WorkflowBuilderAgent.php` — Workflow Builder Agent (PRD §12.2 — Phase 4). (~1029 tok)
+
 ## backend/app/Services/Providers/
 
 - `ClaudeProvider.php` — ClaudeProvider: name, supportsModel, complete (~543 tok)
 - `GoogleAdkProvider.php` — Google ADK (Agent Development Kit) provider adapter (Phase 3). (~1180 tok)
+- `OllamaProvider.php` — Ollama / vLLM-compatible local LLM provider (Phase 4 — PRD §9.2, §24.5). (~795 tok)
 - `OpenAiProvider.php` — OpenAiProvider: name, supportsModel, complete (~496 tok)
 
 ## backend/app/Support/
@@ -235,7 +358,7 @@
 - `mail.php` — Declares of (~969 tok)
 - `queue.php` (~1120 tok)
 - `sanctum.php` (~828 tok)
-- `services.php` (~358 tok)
+- `services.php` (~443 tok)
 - `session.php` (~2093 tok)
 
 ## backend/database/
@@ -255,15 +378,21 @@
 - `2026_05_19_005628_create_personal_access_tokens_table.php` — Run the migrations. (~231 tok)
 - `2026_05_19_100000_create_phase2_lifecycle_tables.php` — Phase 2 — Lifecycle & Reliability tables (~2585 tok)
 - `2026_05_19_200000_create_phase3_governance_tables.php` — Phase 3 — Enterprise Governance & Integrations tables (~4019 tok)
+- `2026_05_19_250000_create_phase4_advanced_platform_tables.php` — Phase 4 — Advanced Multi-Agent Platform (~5928 tok)
+- `2026_05_19_300000_create_phase5_marketplace_tables.php` — Phase 5 — Marketplace, Scale & Productization (~4899 tok)
+- `2026_05_19_400000_create_flowise_studio_tables.php` — flowise_agents/flowise_runs/flowise_syncs (~900 tok)
+- `2026_05_19_400000_create_flowise_studio_tables.php` — AI Workflow Studio — FlowiseAI integration tables. (~1253 tok)
 
 ## backend/database/seeders/
 
-- `DatabaseSeeder.php` — DatabaseSeeder: run (~2769 tok)
-- `Phase3Seeder.php` — Phase3Seeder: run (~5072 tok)
+- `DatabaseSeeder.php` — Database seeder: DatabaseSeeder (~2791 tok)
+- `Phase3Seeder.php` — Database seeder: Phase3Seeder (~5072 tok)
+- `Phase4Seeder.php` — Phase 4 seed data — Model catalog, routing rules, default prompts, (~2386 tok)
+- `Phase5Seeder.php` — Phase 5 demo data — Marketplace + Analytics + Compliance + GitOps + Locales. (~5998 tok)
 
 ## backend/docker/
 
-- `entrypoint.sh` — ------------------------------------------------------------------- (~1030 tok)
+- `entrypoint.sh` — Laravel 12 dev entrypoint (~1235 tok)
 
 ## backend/public/
 
@@ -286,7 +415,7 @@
 
 ## backend/routes/
 
-- `api.php` (~3175 tok)
+- `api.php` (~7006 tok)
 - `console.php` (~85 tok)
 - `web.php` (~29 tok)
 
@@ -301,6 +430,23 @@
 ## backend/storage/app/private/
 
 - `.gitignore` — Git ignore rules (~4 tok)
+
+## backend/storage/app/private/audit-exports/13/
+
+- `a48e438e-68a2-4276-9ffb-63d566efe090.csv` (~63 tok)
+
+## backend/storage/app/private/audit-exports/77/
+
+- `8f755518-8bff-4e39-9d2f-04836499289e.csv` (~64 tok)
+- `925d7869-0b15-43e4-afc1-014af89a9f03.csv` (~64 tok)
+- `9ff7cf7c-3507-4a5f-a310-1f750f9f73a0.csv` (~63 tok)
+- `b0b8af4a-8f25-4c91-b82a-7cdf28c97cdc.csv` (~63 tok)
+- `c22ac894-3796-4357-a21c-e624873e3954.csv` (~64 tok)
+- `d453e270-6503-4500-84ac-d0d5c0448de2.csv` (~64 tok)
+
+## backend/storage/app/private/audit-exports/9/
+
+- `3c787bcf-3b39-46c4-981d-010ed29e55fe.csv` (~63 tok)
 
 ## backend/storage/app/public/
 
@@ -373,7 +519,6 @@
 ## backend/storage/logs/
 
 - `.gitignore` — Git ignore rules (~4 tok)
-- `laravel.log` (~106711 tok)
 
 ## backend/tests/
 
@@ -383,8 +528,10 @@
 
 - `ExampleTest.php` — A basic test example. (~96 tok)
 - `PlatformPhase1Test.php` — PlatformPhase1Test: test_health_endpoint, test_login_and_me, test_agent_crud_creates_version_and_audit, test_mcp_health_check + 2 more (~911 tok)
-- `PlatformPhase2Test.php` — PlatformPhase2Test: test_approval_queue_endpoint_returns_paginated, test_approval_gated_workflow_pau (~1809 tok)
-- `PlatformPhase3Test.php` — PlatformPhase3Test: test_rbac_roles_endpoint_returns_roles, test_rbac_permissions_endpoint, test_rba (~3010 tok)
+- `PlatformPhase2Test.php` — PlatformPhase2Test: test_approval_queue_endpoint_returns_paginated, test_approval_gated_workflow_pauses_and_resumes, test_agent_version_diff, test_... (~1809 tok)
+- `PlatformPhase3Test.php` — PlatformPhase3Test: test_rbac_roles_endpoint_returns_roles, test_rbac_permissions_endpoint, test_rbac_my_permissions_returns_tenant_role, test_admi... (~3010 tok)
+- `PlatformPhase4Test.php` — Phase 4 — Advanced Multi-Agent Platform (~2391 tok)
+- `PlatformPhase5Test.php` — PlatformPhase5Test: test_marketplace_publish_signs_and_publishes_listing, test_marketplace_install_in_dev_succeeds_and_creates_workflow, test_marke... (~3106 tok)
 
 ## backend/tests/Unit/
 
@@ -392,13 +539,21 @@
 
 ## docs/
 
+- `DR_RUNBOOK.md` — Regional Failover Runbook — v1.0 (Phase 5) (~735 tok)
+- `MARKETPLACE_GUIDE.md` — Template Marketplace — Operator & Publisher Guide (~951 tok)
 - `OPERATIONS_RUNBOOK.md` — Operations Runbook — Phase 3 (~1152 tok)
 - `PHASE1_CHECKLIST.md` — Phase 1 Completion Checklist (~593 tok)
 - `PHASE2_CHECKLIST.md` — Phase 2 — Lifecycle & Reliability — Completion Checklist (~1590 tok)
 - `PHASE2_MIGRATION.md` — Phase 2 — Migration Guide (~344 tok)
 - `PHASE3_CHECKLIST.md` — Phase 3 — Enterprise Governance & Integrations — Completion Checklist (~1705 tok)
 - `PHASE3_MIGRATION.md` — Phase 3 — Migration Guide (~917 tok)
+- `PHASE4_CHECKLIST.md` — Phase 4 — Advanced Multi-Agent Platform · Checklist (~1280 tok)
+- `PHASE4_MIGRATION.md` — Phase 4 — Migration & Operations Guide (~1251 tok)
+- `PHASE5_CHECKLIST.md` — Phase 5 — Marketplace, Scale & Productization — Completion Checklist (~1263 tok)
+- `PHASE5_MIGRATION.md` — Phase 5 — Migration Guide (~663 tok)
+- `SDK_QUICKSTART.md` — Public SDKs & CLI — Quickstart (~667 tok)
 - `SOC2_CONTROL_MAPPING.md` — SOC 2 Readiness — Control Mapping Document (~1755 tok)
+- `v1.0_RELEASE_NOTES.md` — Enterprise AI + MCP + Multi-Agent Platform — v1.0 Release Notes (~748 tok)
 
 ## docs/kubernetes/
 
@@ -414,7 +569,7 @@
 - `postcss.config.mjs` (~22 tok)
 - `tailwind.config.ts` — Tailwind CSS configuration (~183 tok)
 - `tsconfig.json` — TypeScript configuration (~173 tok)
-- `tsconfig.tsbuildinfo` (~72483 tok)
+- `tsconfig.tsbuildinfo` (~73725 tok)
 
 ## frontend/docker/
 
@@ -425,11 +580,15 @@
 - `globals.css` — Styles: 4 rules (~230 tok)
 - `layout.tsx` — inter (~331 tok)
 - `page.tsx` — Home (~30 tok)
-- `providers.tsx` — Providers — uses useState (~271 tok)
+- `providers.tsx` — Providers — uses useState (~301 tok)
 
 ## frontend/src/app/(app)/
 
 - `layout.tsx` — AppLayout (~54 tok)
+
+## frontend/src/app/(app)/a2a/
+
+- `page.tsx` — A2APage — renders table — uses useState, useEffect (~1648 tok)
 
 ## frontend/src/app/(app)/admin/
 
@@ -437,15 +596,27 @@
 
 ## frontend/src/app/(app)/agents/
 
-- `page.tsx` — AgentsPage — renders table, modal (~5284 tok)
+- `page.tsx` — AgentsPage — renders table, modal — uses useState, useMutation, useQuery, useMemo (~5284 tok)
+
+## frontend/src/app/(app)/analytics/
+
+- `page.tsx` — AnalyticsPage — renders table — uses useQuery, useMemo (~2029 tok)
 
 ## frontend/src/app/(app)/approvals/
 
-- `page.tsx` — STATUS_BADGE — renders table (~1733 tok)
+- `page.tsx` — STATUS_BADGE — renders table — uses useQuery, useMutation (~1733 tok)
 
 ## frontend/src/app/(app)/audit-reports/
 
-- `page.tsx` — AuditReportsPage — renders table (~2486 tok)
+- `page.tsx` — AuditReportsPage — renders table — uses useState, useEffect (~2486 tok)
+
+## frontend/src/app/(app)/autogen-import/
+
+- `page.tsx` — SAMPLE_PAYLOADS — uses useQuery, useMutation (~1593 tok)
+
+## frontend/src/app/(app)/bridges/
+
+- `page.tsx` — BridgesPage — uses useState, useEffect (~1286 tok)
 
 ## frontend/src/app/(app)/chat/
 
@@ -453,11 +624,23 @@
 
 ## frontend/src/app/(app)/codegen/
 
-- `page.tsx` — CodegenPage — renders table (~1448 tok)
+- `page.tsx` — CodegenPage — renders table — uses useState, useQuery, useMutation (~1448 tok)
+
+## frontend/src/app/(app)/compliance/
+
+- `page.tsx` — CompliancePage — renders table — uses useQuery, useState, useMutation (~1844 tok)
 
 ## frontend/src/app/(app)/console/
 
 - `page.tsx` — ConsoleUI (~65 tok)
+
+## frontend/src/app/(app)/continuous-security/
+
+- `page.tsx` — RISK_TONE — renders table — uses useState, useQuery, useMutation (~2203 tok)
+
+## frontend/src/app/(app)/cost-governance/
+
+- `page.tsx` — CostGovernancePage — renders form — uses useQuery, useState, useMutation (~2201 tok)
 
 ## frontend/src/app/(app)/dashboard/
 
@@ -465,31 +648,79 @@
 
 ## frontend/src/app/(app)/deployments/
 
-- `page.tsx` — ENVIRONMENTS — renders table (~3097 tok)
+- `page.tsx` — ENVIRONMENTS — renders table — uses useState, useQuery, useMutation (~3097 tok)
+
+## frontend/src/app/(app)/event-bus/
+
+- `page.tsx` — EventBusPage — renders table — uses useState, useEffect (~1778 tok)
+
+## frontend/src/app/(app)/gitops/
+
+- `page.tsx` — DRIFT_TONE — renders table — uses useQuery, useState, useMutation (~1753 tok)
+
+## frontend/src/app/(app)/marketplace/
+
+- `page.tsx` — CATEGORIES — renders form — uses useState, useQuery, useMemo (~1437 tok)
+
+## frontend/src/app/(app)/marketplace/[id]/
+
+- `page.tsx` — MarketplaceListingPage — uses useRouter, useState, useQuery, useMutation (~2170 tok)
+
+## frontend/src/app/(app)/marketplace/publish/
+
+- `page.tsx` — MarketplacePublishPage — renders form — uses useRouter, useState, useQuery, useMutation (~2024 tok)
 
 ## frontend/src/app/(app)/mcp-servers/
 
 - `page.tsx` — McpServersPage — renders modal (~2905 tok)
 
+## frontend/src/app/(app)/memory/
+
+- `page.tsx` — MemoryPage — uses useState, useEffect (~1874 tok)
+
+## frontend/src/app/(app)/meta-agents/
+
+- `page.tsx` — MetaAgentsPage — uses useState, useEffect (~2029 tok)
+
+## frontend/src/app/(app)/migrations/
+
+- `page.tsx` — MigrationsPage — renders table — uses useState, useEffect (~1142 tok)
+
+## frontend/src/app/(app)/models/
+
+- `page.tsx` — ModelsPage — uses useState, useEffect (~1527 tok)
+
 ## frontend/src/app/(app)/network-policies/
 
-- `page.tsx` — NetworkPoliciesPage — renders table (~1131 tok)
+- `page.tsx` — NetworkPoliciesPage — renders table — uses useState, useEffect (~1131 tok)
+
+## frontend/src/app/(app)/observability/
+
+- `page.tsx` — ObservabilityPage — uses useState, useEffect (~1544 tok)
 
 ## frontend/src/app/(app)/opa-policies/
 
-- `page.tsx` — CATEGORIES (~1775 tok)
+- `page.tsx` — CATEGORIES — uses useState, useEffect (~1775 tok)
+
+## frontend/src/app/(app)/operations/
+
+- `page.tsx` — OperationsDashboardPage — renders table — uses useQuery (~1653 tok)
 
 ## frontend/src/app/(app)/platform/
 
 - `page.tsx` — PlatformUI (~65 tok)
 
+## frontend/src/app/(app)/prompts/
+
+- `page.tsx` — PromptsPage — uses useState, useEffect (~1846 tok)
+
 ## frontend/src/app/(app)/provider-budgets/
 
-- `page.tsx` — PROVIDER_COLORS — renders table (~1501 tok)
+- `page.tsx` — PROVIDER_COLORS — renders table — uses useState, useEffect (~1501 tok)
 
 ## frontend/src/app/(app)/rbac/
 
-- `page.tsx` — RbacPage (~1692 tok)
+- `page.tsx` — RbacPage — uses useState, useEffect (~1692 tok)
 
 ## frontend/src/app/(app)/runs/
 
@@ -498,30 +729,52 @@
 
 ## frontend/src/app/(app)/security-scans/
 
-- `page.tsx` — SEVERITY_COLORS (~1639 tok)
+- `page.tsx` — SEVERITY_COLORS — uses useState, useEffect (~1639 tok)
 
 ## frontend/src/app/(app)/templates/
 
-- `page.tsx` — TemplatesPage (~3261 tok)
+- `page.tsx` — TemplatesPage — uses useState, useQuery, useMutation (~3261 tok)
+
+## frontend/src/app/(app)/workflow-studio/
+
+- `page.tsx` — /workflow-studio — AI Workflow Studio dashboard. (~4563 tok)
+
+## frontend/src/app/(app)/workflow-studio/[id]/
+
+- `page.tsx` — /workflow-studio/[id] — detail page. (~2981 tok)
 
 ## frontend/src/app/(app)/workflows/
 
-- `page.tsx` — WorkflowsPage — renders table, modal (~3492 tok)
+- `page.tsx` — WorkflowsPage — renders table, modal — uses useState, useMutation, useQuery, useMemo (~3492 tok)
 
 ## frontend/src/app/(app)/workflows/[id]/edit/
 
 - `page.tsx` — WorkflowEditPage — uses useParams, useQuery (~530 tok)
 
+## frontend/src/app/(app)/workflow-studio/
+
+- `page.tsx` — WorkflowStudioPage — Flowise agent dashboard, sync/import/create (~2700 tok)
+
+## frontend/src/app/(app)/workflow-studio/[id]/
+
+- `page.tsx` — WorkflowStudioAgentPage — embedded Flowise canvas + run/runs/settings/logs tabs (~2100 tok)
+
+## frontend/src/components/workflow-studio/
+
+- `FlowiseEmbed.tsx` — Themed iframe wrapper for Flowise canvas (~430 tok)
+- `RunPanel.tsx` — Right-rail run/test UI calling /api/flowise/agents/:id/run (~720 tok)
+
 ## frontend/src/app/(auth)/login/
 
-- `page.tsx` — tenants — renders form (~5052 tok)
+- `page.tsx` — tenants — renders form — uses useState (~5052 tok)
 
 ## frontend/src/components/app-shell/
 
-- `AppShell.tsx` — NAV (~2644 tok)
+- `AppShell.tsx` — NAV (~3374 tok)
 
 ## frontend/src/components/shared/
 
+- `CommentThread.tsx` — CommentThread — uses useState, useEffect (~592 tok)
 - `PageHeader.tsx` — PageHeader (~638 tok)
 
 ## frontend/src/components/ui/
@@ -532,14 +785,20 @@
 - `EnterpriseAIMCPPlatformConsole.tsx` — navSections (~10632 tok)
 - `EnterpriseAIMCPPlatformPage.tsx` — platformLayers (~7750 tok)
 
+## frontend/src/components/workflow-studio/
+
+- `FlowiseEmbed.tsx` — FlowiseEmbed (~586 tok)
+- `RunPanel.tsx` — RunPanel (~1140 tok)
+
 ## frontend/src/components/workflow/
 
-- `WorkflowBuilder.tsx` — NODE_TYPES_LIST (~3707 tok)
+- `WorkflowBuilder.tsx` — NODE_TYPES_LIST — uses useState, useEffect, useMemo, useCallback (~3707 tok)
 
 ## frontend/src/lib/
 
-- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~4860 tok)
+- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~9492 tok)
 - `auth-context.tsx` — AuthContext (~1359 tok)
+- `i18n-context.tsx` — I18nContext (~1447 tok)
 
 ## frontend/src/theme/
 
@@ -549,10 +808,31 @@
 
 - `otel-collector-config.yaml` (~135 tok)
 
+## infra/argocd/
+
+- `project.yaml` — K8s AppProject: eamcp (~268 tok)
+- `root-application.yaml` — K8s Application: eamcp-root (~150 tok)
+
+## infra/argocd/apps/
+
+- `eamcp-dev.yaml` — K8s Application: eamcp-dev (~148 tok)
+- `eamcp-prod.yaml` — K8s Application: eamcp-prod (~203 tok)
+- `eamcp-staging.yaml` — K8s Application: eamcp-staging (~156 tok)
+
+## infra/grafana/provisioning/dashboards/
+
+- `dashboards.yml` (~56 tok)
+- `eamcp-overview.json` (~582 tok)
+
+## infra/grafana/provisioning/datasources/
+
+- `datasources.yml` (~73 tok)
+
 ## infra/helm/eamcp/
 
 - `Chart.yaml` (~53 tok)
 - `values-dev.yaml` (~488 tok)
+- `values-multi-region.yaml` — Phase 5 — Multi-region overlay. (~380 tok)
 - `values-prod.yaml` (~670 tok)
 - `values-staging.yaml` (~548 tok)
 - `values.yaml` (~556 tok)
@@ -560,17 +840,54 @@
 ## infra/helm/eamcp/templates/
 
 - `_helpers.tpl` (~78 tok)
-- `backend-deployment.yaml` — K8s Deployment (~302 tok)
+- `backend-deployment.yaml` — K8s Deployment: {{ (~302 tok)
 
 ## infra/opa/
 
-- `approval.rego` (~432 tok)
-- `deployment.rego` (~440 tok)
-- `eamcp.rego` (~269 tok)
-- `network.rego` (~230 tok)
-- `template_import.rego` (~234 tok)
-- `tenant_isolation.rego` (~165 tok)
+- `a2a_federation.rego` — Phase 4 — A2A Federation Policies (PRD §13.2) (~295 tok)
+- `approval.rego` — Phase 3 — Approval requirement matrix (PRD Section 21.3). (~432 tok)
+- `deployment.rego` — Phase 3 — Deployment promotion policies. (~440 tok)
+- `eamcp.rego` — Phase 2 baseline policy — mirrors the built-in fallback in OpaPolicyService. (~269 tok)
+- `marketplace.rego` — Phase 5 — Marketplace install policy. (~431 tok)
+- `memory_scope.rego` — Phase 4 — Memory Scoping Policy (PRD §9.2 + §17) (~178 tok)
+- `meta_agent.rego` — Phase 4 — Meta-Agent Autonomy Policy (PRD §12.2) (~335 tok)
+- `network.rego` — Phase 3 — Network access policies. (~230 tok)
+- `template_import.rego` — Phase 3 — Template import policies. (~234 tok)
+- `tenant_isolation.rego` — Phase 3 — Tenant isolation policies. (~165 tok)
 
 ## infra/openhands/
 
 - `index.html` — OpenHands SDK Sandbox (Phase 2 stub) (~117 tok)
+
+## infra/prometheus/
+
+- `prometheus.yml` (~108 tok)
+
+## sdk/cli/
+
+- `package.json` — Node.js package manifest (~96 tok)
+- `README.md` — Project documentation (~114 tok)
+
+## sdk/cli/bin/
+
+- `eamcp.mjs` — EAMCP Platform CLI (Phase 5 / v1.0). (~1735 tok)
+
+## sdk/python/
+
+- `pyproject.toml` — Python project configuration (~172 tok)
+- `README.md` — Project documentation (~284 tok)
+
+## sdk/python/eamcp/
+
+- `__init__.py` — EAMCP — Enterprise AI + MCP + Multi-Agent Platform Python SDK. (~149 tok)
+- `client.py` — View: list, get, create, update, delete, list, get, create, update, delete, list, get, list, list, list, get, list, get, create (~2426 tok)
+
+## sdk/typescript/
+
+- `package.json` — Node.js package manifest (~177 tok)
+- `README.md` — Project documentation (~227 tok)
+- `tsconfig.json` — TypeScript configuration (~82 tok)
+
+## sdk/typescript/src/
+
+- `index.ts` — EAMCP — Enterprise AI + MCP + Multi-Agent Platform TypeScript SDK. (~2416 tok)

@@ -1,0 +1,58 @@
+# Phase 5 — Multi-region overlay.
+#
+# Primary cluster runs full stack. Secondary cluster runs read-replicas
+# (database, object storage, Vault) plus warm-standby Temporal workers.
+# Failover is governed by infra/argocd/apps/eamcp-prod.yaml + the DR runbook.
+
+global:
+  region:
+    primary: us-east-1
+    secondary: eu-west-1
+    role: primary               # override to "secondary" on the standby cluster
+    failoverWindow: PT30M       # documented RTO target
+    rpoTarget: PT5M
+
+postgresql:
+  primary:
+    host: db-primary.us-east-1.rds.amazonaws.com
+  replica:
+    enabled: true
+    host: db-replica.eu-west-1.rds.amazonaws.com
+    promotionStrategy: manual
+
+objectStorage:
+  bucket: eamcp-artifacts
+  crossRegionReplication:
+    enabled: true
+    destinationBucket: eamcp-artifacts-eu
+
+vault:
+  primary:
+    address: https://vault-primary.example.com
+  replication:
+    secondaryAddresses:
+      - https://vault-eu.example.com
+
+temporal:
+  namespaces:
+    - name: eamcp-workflows
+      retention: 30d
+      globalReplication: true
+
+kafka:
+  multiRegion:
+    enabled: true
+    mode: stretched
+
+ingress:
+  primary:
+    host: app.example.com
+  secondary:
+    host: app-eu.example.com
+  globalLoadBalancer:
+    enabled: true
+    healthCheckPath: /api/health
+
+dr:
+  failoverRunbook: docs/DR_RUNBOOK.md
+  drillSchedule: quarterly

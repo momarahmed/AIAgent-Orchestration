@@ -1,0 +1,69 @@
+{
+  "title": "EAMCP — Platform Overview (Phase 4)",
+  "uid": "eamcp-platform-overview",
+  "schemaVersion": 38,
+  "version": 1,
+  "tags": ["eamcp", "phase4"],
+  "panels": [
+    {
+      "title": "Workflow success rate",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "eamcp_workflow_success_rate" }
+      ],
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 0 }
+    },
+    {
+      "title": "Workflow duration p95",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [
+        { "expr": "eamcp_workflow_duration_ms_p95" }
+      ],
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 0 }
+    },
+    {
+      "title": "Tool failure rate",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "eamcp_tool_failure_rate" }],
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 0 }
+    },
+    {
+      "title": "Agent error rate",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "eamcp_agent_error_rate" }],
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 0 }
+    },
+    {
+      "title": "Token usage (per minute)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "rate(eamcp_model_tokens_total[1m])" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 }
+    },
+    {
+      "title": "Model cost USD (per minute)",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "rate(eamcp_model_cost_usd_total[1m])" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 }
+    },
+    {
+      "title": "Approval latency p95",
+      "type": "timeseries",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "eamcp_approval_latency_ms_p95" }],
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 }
+    },
+    {
+      "title": "Deployment failure rate",
+      "type": "stat",
+      "datasource": "Prometheus",
+      "targets": [{ "expr": "eamcp_deployment_failure_rate" }],
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 }
+    }
+  ]
+}

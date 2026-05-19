@@ -295,3 +295,259 @@ export const providerBudgetsApi = {
   check: (payload: any) => api.post("/api/provider-budgets/check", payload).then((r) => r.data),
   summary: (tenantId: number) => api.get("/api/provider-budgets/summary", { params: { tenant_id: tenantId } }).then((r) => r.data),
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// Phase 4 — Advanced Multi-Agent Platform
+// ═══════════════════════════════════════════════════════════════════
+
+// Model Control Plane
+export const modelsApi = {
+  list: (tenantId?: number) => api.get("/api/models", { params: { tenant_id: tenantId } }).then((r) => r.data.data),
+  show: (slug: string) => api.get(`/api/models/${slug}`).then((r) => r.data),
+  create: (payload: any) => api.post("/api/models", payload).then((r) => r.data),
+  plan: (payload: any) => api.post("/api/models/route/plan", payload).then((r) => r.data),
+  complete: (payload: any) => api.post("/api/models/route/complete", payload).then((r) => r.data),
+  rules: () => api.get("/api/models/routing/rules").then((r) => r.data.data),
+  createRule: (payload: any) => api.post("/api/models/routing/rules", payload).then((r) => r.data),
+};
+
+// Prompt Registry
+export const promptsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/prompts", { params }).then((r) => r.data.data),
+  get: (id: number) => api.get(`/api/prompts/${id}`).then((r) => r.data),
+  create: (payload: any) => api.post("/api/prompts", payload).then((r) => r.data),
+  newVersion: (id: number, payload: any) => api.post(`/api/prompts/${id}/versions`, payload).then((r) => r.data),
+  activate: (id: number, version: number) => api.post(`/api/prompts/${id}/versions/${version}/activate`).then((r) => r.data),
+  diff: (id: number, a: number, b: number) => api.get(`/api/prompts/${id}/versions/${a}/diff/${b}`).then((r) => r.data),
+  render: (id: number, variables: any = {}, version?: number) =>
+    api.post(`/api/prompts/${id}/render`, { variables, version }).then((r) => r.data),
+  evaluate: (id: number, payload: any) => api.post(`/api/prompts/${id}/evaluate`, payload).then((r) => r.data),
+  leaderboard: (id: number) => api.get(`/api/prompts/${id}/leaderboard`).then((r) => r.data.data),
+};
+
+// Memory / RAG
+export const memoryApi = {
+  collections: (params: Record<string, any> = {}) => api.get("/api/memory/collections", { params }).then((r) => r.data.data),
+  createCollection: (payload: any) => api.post("/api/memory/collections", payload).then((r) => r.data),
+  items: (collectionId: number) => api.get(`/api/memory/collections/${collectionId}/items`).then((r) => r.data.data),
+  remember: (collectionId: number, payload: { content: string; session_id?: string; agent_id?: number; metadata?: any }) =>
+    api.post(`/api/memory/collections/${collectionId}/remember`, payload).then((r) => r.data),
+  retrieve: (collectionId: number, payload: { query: string; top_k?: number; session_id?: string; agent_id?: number }) =>
+    api.post(`/api/memory/collections/${collectionId}/retrieve`, payload).then((r) => r.data),
+  forget: (itemId: number) => api.delete(`/api/memory/items/${itemId}`),
+  shortTerm: (sessionId: string) => api.get(`/api/memory/short-term/${sessionId}`).then((r) => r.data.data),
+};
+
+// A2A Gateway
+export const a2aApi = {
+  partners: (params: Record<string, any> = {}) => api.get("/api/a2a/partners", { params }).then((r) => r.data.data),
+  createPartner: (payload: any) => api.post("/api/a2a/partners", payload).then((r) => r.data),
+  updatePartner: (id: number, payload: any) => api.put(`/api/a2a/partners/${id}`, payload).then((r) => r.data),
+  send: (payload: { partner_id: number; payload: any; to_agent?: string; message_type?: string; priority?: string }) =>
+    api.post("/api/a2a/send", payload).then((r) => r.data),
+  messages: (params: Record<string, any> = {}) => api.get("/api/a2a/messages", { params }).then((r) => r.data.data),
+};
+
+// Meta-Agents
+export const metaAgentsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/meta-agents", { params }).then((r) => r.data.data),
+  registry: () => api.get("/api/meta-agents/registry").then((r) => r.data.data),
+  route: (prompt: string) => api.post("/api/meta-agents/route", { prompt }).then((r) => r.data),
+  start: (payload: { tenant_id: number; meta_agent: string; prompt: string; project_id?: number; plan?: any; autonomous?: boolean }) =>
+    api.post("/api/meta-agents/run", payload).then((r) => r.data),
+  autopilot: (payload: { tenant_id: number; prompt: string; project_id?: number }) =>
+    api.post("/api/meta-agents/autopilot", payload).then((r) => r.data),
+  show: (id: number) => api.get(`/api/meta-agents/${id}`).then((r) => r.data),
+  resume: (id: number) => api.post(`/api/meta-agents/${id}/resume`).then((r) => r.data),
+};
+
+// Migration imports
+export const migrationsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/migrations", { params }).then((r) => r.data.data),
+  show: (id: number) => api.get(`/api/migrations/${id}`).then((r) => r.data),
+  import: (payload: { tenant_id: number; source_format: string; source: any; project_id?: number; filename?: string }) =>
+    api.post("/api/migrations/import", payload).then((r) => r.data),
+};
+
+// Cross-framework bridges
+export const bridgesApi = {
+  frameworks: () => api.get("/api/bridges/frameworks").then((r) => r.data.data),
+  connections: (params: Record<string, any> = {}) => api.get("/api/bridges/connections", { params }).then((r) => r.data.data),
+  createConnection: (payload: any) => api.post("/api/bridges/connections", payload).then((r) => r.data),
+  call: (id: number, payload: { action: string; input?: any; workflow_run_id?: number }) =>
+    api.post(`/api/bridges/connections/${id}/call`, payload).then((r) => r.data),
+  toggle: (id: number, enabled?: boolean) =>
+    api.post(`/api/bridges/connections/${id}/toggle`, { enabled }).then((r) => r.data),
+};
+
+// Event bus
+export const eventBusApi = {
+  status: () => api.get("/api/event-bus/status").then((r) => r.data),
+  publish: (payload: { topic: string; event_type: string; payload?: any; headers?: any }) =>
+    api.post("/api/event-bus/publish", payload).then((r) => r.data),
+  subscriptions: (params: Record<string, any> = {}) => api.get("/api/event-bus/subscriptions", { params }).then((r) => r.data.data),
+  createSubscription: (payload: any) => api.post("/api/event-bus/subscriptions", payload).then((r) => r.data),
+  log: (params: Record<string, any> = {}) => api.get("/api/event-bus/log", { params }).then((r) => r.data.data),
+};
+
+// Advanced observability
+export const observabilityApi = {
+  metrics: () => api.get("/api/observability/metrics.json").then((r) => r.data),
+  timeline: (runId: number) => api.get(`/api/observability/timeline/${runId}`).then((r) => r.data.data),
+  replay: (runId: number, payload: any = {}) => api.post(`/api/observability/runs/${runId}/replay`, payload).then((r) => r.data),
+  knowledgeGraph: (tenantId: number) =>
+    api.get("/api/observability/knowledge-graph", { params: { tenant_id: tenantId } }).then((r) => r.data),
+};
+
+// Comments
+export const commentsApi = {
+  list: (assetType: string, assetId: number) =>
+    api.get("/api/comments", { params: { asset_type: assetType, asset_id: assetId } }).then((r) => r.data.data),
+  create: (payload: { tenant_id: number; asset_type: string; asset_id: number; body: string; parent_id?: number }) =>
+    api.post("/api/comments", payload).then((r) => r.data),
+  resolve: (id: number) => api.post(`/api/comments/${id}/resolve`).then((r) => r.data),
+  remove: (id: number) => api.delete(`/api/comments/${id}`),
+};
+
+// ─── Phase 5: Marketplace ───────────────────────────────────────────
+export const marketplaceApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/marketplace/listings", { params }).then((r) => r.data),
+  search: (q: string, params: Record<string, any> = {}) => api.get("/api/marketplace/search", { params: { q, ...params } }).then((r) => r.data),
+  get: (id: number) => api.get(`/api/marketplace/listings/${id}`).then((r) => r.data),
+  publish: (payload: any) => api.post("/api/marketplace/publish", payload).then((r) => r.data),
+  install: (id: number, payload: any) => api.post(`/api/marketplace/listings/${id}/install`, payload).then((r) => r.data),
+  rate: (id: number, payload: any) => api.post(`/api/marketplace/listings/${id}/rate`, payload).then((r) => r.data),
+  installs: (params: Record<string, any> = {}) => api.get("/api/marketplace/installs", { params }).then((r) => r.data),
+  publisherSummary: () => api.get("/api/marketplace/publisher-summary").then((r) => r.data),
+};
+
+// ─── Phase 5: Advanced Analytics ────────────────────────────────────
+export const analyticsApi = {
+  usage: (days = 30) => api.get("/api/analytics/usage", { params: { days } }).then((r) => r.data),
+  cost: (days = 30) => api.get("/api/analytics/cost", { params: { days } }).then((r) => r.data),
+  reliability: (days = 30) => api.get("/api/analytics/reliability", { params: { days } }).then((r) => r.data),
+  templateAdoption: (days = 90) => api.get("/api/analytics/template-adoption", { params: { days } }).then((r) => r.data),
+  qualityScores: (params: Record<string, any> = {}) => api.get("/api/analytics/quality-scores", { params }).then((r) => r.data),
+  recompute: () => api.post("/api/analytics/quality-scores/recompute").then((r) => r.data),
+};
+
+// ─── Phase 5: Cost Governance (portfolio) ───────────────────────────
+export const costGovernanceApi = {
+  budgets: () => api.get("/api/cost-governance/budgets").then((r) => r.data),
+  createBudget: (payload: any) => api.post("/api/cost-governance/budgets", payload).then((r) => r.data),
+  updateBudget: (id: number, payload: any) => api.put(`/api/cost-governance/budgets/${id}`, payload).then((r) => r.data),
+  removeBudget: (id: number) => api.delete(`/api/cost-governance/budgets/${id}`),
+  generateChargeback: (payload: any) => api.post("/api/cost-governance/chargeback", payload).then((r) => r.data),
+  chargebackHistory: () => api.get("/api/cost-governance/chargeback").then((r) => r.data),
+  recommendations: (payload: any = {}) => api.post("/api/cost-governance/recommendations", payload).then((r) => r.data),
+};
+
+// ─── Phase 5: Compliance Exports ────────────────────────────────────
+export const complianceApi = {
+  frameworks: () => api.get("/api/compliance/frameworks").then((r) => r.data),
+  exports: (params: Record<string, any> = {}) => api.get("/api/compliance/exports", { params }).then((r) => r.data),
+  create: (payload: any) => api.post("/api/compliance/exports", payload).then((r) => r.data),
+  get: (id: number) => api.get(`/api/compliance/exports/${id}`).then((r) => r.data),
+  download: (id: number) => api.get(`/api/compliance/exports/${id}/download`, { responseType: "blob" }),
+};
+
+// ─── Phase 5: Continuous Security ───────────────────────────────────
+export const continuousSecurityApi = {
+  snapshots: (params: Record<string, any> = {}) => api.get("/api/continuous-security/snapshots", { params }).then((r) => r.data),
+  takeSnapshot: (imageRef: string) => api.post("/api/continuous-security/snapshots", { image_ref: imageRef }).then((r) => r.data),
+  diffs: (params: Record<string, any> = {}) => api.get("/api/continuous-security/diffs", { params }).then((r) => r.data),
+  diffLatest: (imageRef: string) => api.post("/api/continuous-security/diffs/latest", { image_ref: imageRef }).then((r) => r.data),
+  findings: (params: Record<string, any> = {}) => api.get("/api/continuous-security/findings", { params }).then((r) => r.data),
+  reportFinding: (payload: any) => api.post("/api/continuous-security/findings", payload).then((r) => r.data),
+  transitionFinding: (id: number, payload: any) => api.post(`/api/continuous-security/findings/${id}/transition`, payload).then((r) => r.data),
+  dueDates: () => api.get("/api/continuous-security/due-dates").then((r) => r.data),
+};
+
+// ─── Phase 5: GitOps + HA/DR ────────────────────────────────────────
+export const gitopsApi = {
+  environments: () => api.get("/api/gitops/environments").then((r) => r.data),
+  registerEnvironment: (payload: any) => api.post("/api/gitops/environments", payload).then((r) => r.data),
+  sync: (id: number) => api.post(`/api/gitops/environments/${id}/sync`).then((r) => r.data),
+  drift: (id: number) => api.get(`/api/gitops/environments/${id}/drift`).then((r) => r.data),
+  syncs: (id: number) => api.get(`/api/gitops/environments/${id}/syncs`).then((r) => r.data),
+  regions: () => api.get("/api/gitops/regions").then((r) => r.data),
+  failoverDrill: (payload: any) => api.post("/api/gitops/failover-drill", payload).then((r) => r.data),
+};
+
+// ─── Phase 5: Legacy Imports ────────────────────────────────────────
+export const legacyImportsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/legacy-imports", { params }).then((r) => r.data),
+  get: (id: number) => api.get(`/api/legacy-imports/${id}`).then((r) => r.data),
+  create: (payload: any) => api.post("/api/legacy-imports", payload).then((r) => r.data),
+};
+
+// ─── AI Workflow Studio — FlowiseAI integration ────────────────────
+export type FlowiseAgent = {
+  id: number;
+  tenant_id: number;
+  project_id: number | null;
+  owner_id: number | null;
+  name: string;
+  slug: string;
+  description?: string | null;
+  status: "draft" | "active" | "paused" | "error" | "archived";
+  flowise_chatflow_id: string | null;
+  flowise_api_endpoint: string | null;
+  workflow_config?: any;
+  tools_config?: string[] | null;
+  model_config?: any;
+  last_run_status?: string | null;
+  last_run_at?: string | null;
+  last_synced_at?: string | null;
+  created_at: string;
+  updated_at: string;
+  owner?: { id: number; name: string; email: string } | null;
+};
+
+export type FlowiseRun = {
+  id: number;
+  flowise_agent_id: number;
+  status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+  input?: any; output?: any; tool_calls?: any; conversation?: any;
+  prompt_tokens?: number | null; completion_tokens?: number | null; total_tokens?: number | null;
+  duration_ms?: number | null;
+  error_message?: string | null;
+  started_at?: string; completed_at?: string;
+  created_at: string;
+};
+
+export const flowiseApi = {
+  health: () => api.get("/api/flowise/health").then((r) => r.data),
+  chatflows: () => api.get("/api/flowise/chatflows").then((r) => r.data),
+  syncTenant: (tenant_id: number, project_id?: number | null) =>
+    api.post("/api/flowise/sync", { tenant_id, project_id }).then((r) => r.data),
+  importChatflow: (payload: { tenant_id: number; project_id?: number | null; chatflow_id: string }) =>
+    api.post<FlowiseAgent>("/api/flowise/import", payload).then((r) => r.data),
+  exportAgent: (agent_id: number) =>
+    api.post("/api/flowise/export", { agent_id }).then((r) => r.data),
+
+  list: (params: Record<string, any> = {}) =>
+    api.get<{ data: { data: FlowiseAgent[] } }>("/api/flowise/agents", { params }).then((r) => r.data.data),
+  get: (id: number) => api.get<FlowiseAgent & { syncs?: any[] }>(`/api/flowise/agents/${id}`).then((r) => r.data),
+  create: (payload: Partial<FlowiseAgent> & { tenant_id: number; name: string }) =>
+    api.post<FlowiseAgent>("/api/flowise/agents", payload).then((r) => r.data),
+  update: (id: number, payload: Partial<FlowiseAgent> & { push_to_flowise?: boolean }) =>
+    api.patch<FlowiseAgent>(`/api/flowise/agents/${id}`, payload).then((r) => r.data),
+  remove: (id: number) => api.delete(`/api/flowise/agents/${id}`),
+  run: (id: number, payload: { question?: string; prompt?: string; history?: any[]; config?: any; session_id?: string }) =>
+    api.post<FlowiseRun>(`/api/flowise/agents/${id}/run`, payload).then((r) => r.data),
+  sync: (id: number) => api.post(`/api/flowise/agents/${id}/sync`).then((r) => r.data),
+  duplicate: (id: number) => api.post<FlowiseAgent>(`/api/flowise/agents/${id}/duplicate`).then((r) => r.data),
+  runs: (id: number) =>
+    api.get<{ data: { data: FlowiseRun[] } }>(`/api/flowise/agents/${id}/runs`).then((r) => r.data.data),
+  embed: (id: number) =>
+    api.get<{ canvas_url: string; chat_url: string | null }>(`/api/flowise/agents/${id}/embed`).then((r) => r.data),
+};
+
+// ─── Phase 5: Localization ──────────────────────────────────────────
+export const localesApi = {
+  list: () => api.get("/api/locales").then((r) => r.data),
+  dictionary: (code: string, namespace?: string) =>
+    api.get(`/api/locales/${code}`, { params: namespace ? { namespace } : {} }).then((r) => r.data),
+  upsert: (code: string, payload: any) => api.post(`/api/locales/${code}`, payload).then((r) => r.data),
+};

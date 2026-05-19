@@ -15,7 +15,7 @@ class WorkflowRun extends Model
         'workflow_id', 'workflow_version_id', 'status', 'environment', 'attempt',
         'input', 'output', 'error',
         'started_at', 'completed_at', 'paused_at', 'resumed_at', 'checkpoint',
-        'triggered_by',
+        'triggered_by', 'trace_id',
     ];
 
     protected $casts = [

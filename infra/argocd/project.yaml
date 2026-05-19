@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: eamcp
+  namespace: argocd
+spec:
+  description: Enterprise AI + MCP + Multi-Agent Platform (v1.0)
+  sourceRepos:
+    - https://github.com/example/eamcp-platform.git
+  destinations:
+    - namespace: 'eamcp-*'
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  # Phase 5 PRD: prod sync must require approval (no auto-sync to prod).
+  roles:
+    - name: prod-deployer
+      description: Manual sync only for prod, must be approved.
+      policies:
+        - p, proj:eamcp:prod-deployer, applications, sync, eamcp/eamcp-prod, allow
+        - p, proj:eamcp:prod-deployer, applications, get, eamcp/*, allow
+      groups:
+        - eamcp:security-approver
+        - eamcp:platform-owner

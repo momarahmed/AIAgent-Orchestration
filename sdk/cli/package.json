@@ -1,0 +1,20 @@
+{
+  "name": "@eamcp/cli",
+  "version": "1.0.0",
+  "description": "EAMCP Platform CLI — v1.0 (Phase 5)",
+  "type": "module",
+  "bin": {
+    "eamcp": "./bin/eamcp.mjs"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "dependencies": {
+    "@eamcp/sdk": "^1.0.0"
+  },
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

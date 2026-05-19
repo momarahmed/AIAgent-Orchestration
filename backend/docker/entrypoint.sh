@@ -77,20 +77,21 @@ echo "[entrypoint] Running migrations..."
 php artisan migrate --force || true
 
 # Seed demo data on first boot, or re-seed when users were wiped (e.g. migrate:fresh).
+# We use a one-liner PHP script (not tinker) for a deterministic exit code.
+USER_COUNT="$(php -r "require 'vendor/autoload.php'; \$app = require 'bootstrap/app.php'; \$app->make(Illuminate\\Contracts\\Console\\Kernel::class)->bootstrap(); echo \\App\\Models\\User::count();" 2>/dev/null || echo 0)"
 if [ -f "database/seeders/DatabaseSeeder.php" ]; then
-  NEED_SEED=0
-  if [ ! -f "storage/.seeded" ]; then
-    NEED_SEED=1
-  elif ! php artisan tinker --execute="exit(\\App\\Models\\User::count() > 0 ? 0 : 1);" 2>/dev/null; then
-    echo "[entrypoint] No users in database — re-running seeders..."
-    NEED_SEED=1
-  fi
-  if [ "$NEED_SEED" = "1" ]; then
-    echo "[entrypoint] Running database seeders..."
+  if [ "${USER_COUNT:-0}" = "0" ] || [ ! -f "storage/.seeded" ]; then
+    echo "[entrypoint] Users table empty or first boot — running seeders..."
     php artisan db:seed --force || true
     mkdir -p storage && touch storage/.seeded
   fi
 fi
+
+# Permanent login self-heal: ensure the demo accounts always exist with the
+# documented passwords, even if seeders were customised or partially failed.
+# This is idempotent and cheap (~50ms), and guarantees login works on every boot.
+echo "[entrypoint] Ensuring demo admin / builder / viewer accounts..."
+php artisan eamcp:ensure-admin --reset-password || true
 
 # Permissions
 mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache

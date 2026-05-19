@@ -6,6 +6,7 @@ import { CssBaseline, ThemeProvider } from "@mui/material";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { muiTheme } from "@/theme/mui-theme";
 import { AuthProvider } from "@/lib/auth-context";
+import { I18nProvider } from "@/lib/i18n-context";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -22,7 +23,9 @@ export function Providers({ children }: { children: ReactNode }) {
       <ThemeProvider theme={muiTheme}>
         <CssBaseline />
         <QueryClientProvider client={client}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <I18nProvider>{children}</I18nProvider>
+          </AuthProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
