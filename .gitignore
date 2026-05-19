@@ -34,11 +34,16 @@ backend/.env
 frontend/.env.local
 frontend/.env
 
-# IDE
+# IDE / local agent tooling
 .vscode/
 .idea/
+.claude/
 *.swp
 .DS_Store
+
+# OpenWolf runtime state (keep docs/config in repo)
+.wolf/daemon.log
+.wolf/cron-state.json
 
 # Docker
 docker-compose.override.yml

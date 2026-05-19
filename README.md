@@ -1,6 +1,11 @@
-# Enterprise AI MCP Management Platform
+# Project AIAgent Orchestration
 
-A vendor-neutral, build-custom-first platform that unifies **AI Agents**, **MCP Servers**, **Visual Workflows**, **Templates**, **Approvals**, and **Observability** under a single asset model — implemented end-to-end in this repository per the v1.1 PRD.
+**Enterprise AI MCP Management Platform** — a vendor-neutral, build-custom-first platform that unifies **AI Agents**, **MCP Servers**, **Visual Workflows**, **Templates**, **Approvals**, and **Observability** under a single asset model — implemented end-to-end in this repository per the v1.1 PRD.
+
+| | |
+|---|---|
+| **GitHub** | [momarahmed/AIAgent-Orchestration](https://github.com/momarahmed/AIAgent-Orchestration) |
+| **Current release** | `v1.0.1` |
 
 > Source PRDs: see `PRD/01..05-phase-*.md` for the five phased product requirements documents (with the **Enhanced** appendix added per the enterprise-grade enhancement prompt).
 
