@@ -17,7 +17,7 @@ class McpGateway
     public function executeTool(
         ?int $toolId,
         array $inputs,
-        TaskRun $task,
+        ?TaskRun $task,
         ?int $allowedAgentId = null,
     ): array {
         $tool = $toolId ? Tool::with('server')->find($toolId) : null;
@@ -34,17 +34,19 @@ class McpGateway
         $output = $this->invoke($tool, $inputs);
         $duration = (int) ((microtime(true) - $start) * 1000);
 
-        ToolCall::create([
-            'task_run_id' => $task->id,
-            'tool_id' => $tool?->id,
-            'mcp_server_id' => $tool?->mcp_server_id,
-            'tool_name' => $tool?->name ?? 'unknown',
-            'input' => $inputs,
-            'output' => $output,
-            'status' => ($output['error'] ?? null) ? 'failed' : 'completed',
-            'error' => $output['error'] ?? null,
-            'duration_ms' => $duration,
-        ]);
+        if ($task) {
+            ToolCall::create([
+                'task_run_id' => $task->id,
+                'tool_id' => $tool?->id,
+                'mcp_server_id' => $tool?->mcp_server_id,
+                'tool_name' => $tool?->name ?? 'unknown',
+                'input' => $inputs,
+                'output' => $output,
+                'status' => ($output['error'] ?? null) ? 'failed' : 'completed',
+                'error' => $output['error'] ?? null,
+                'duration_ms' => $duration,
+            ]);
+        }
 
         return $output;
     }

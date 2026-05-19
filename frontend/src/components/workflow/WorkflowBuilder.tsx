@@ -21,6 +21,13 @@ const NODE_TYPES_LIST = [
   { type: "trigger", label: "Trigger", color: "#22d3ee" },
   { type: "agent", label: "Agent", color: "#a855f7" },
   { type: "mcp_tool", label: "MCP Tool", color: "#34d399" },
+  { type: "approval", label: "Approval", color: "#f59e0b" },
+  { type: "decision", label: "Decision", color: "#fbbf24" },
+  { type: "transform", label: "Transform", color: "#60a5fa" },
+  { type: "loop", label: "Loop", color: "#c084fc" },
+  { type: "parallel", label: "Parallel", color: "#f472b6" },
+  { type: "error_handler", label: "Error Handler", color: "#fb7185" },
+  { type: "template", label: "Template", color: "#94a3b8" },
 ];
 
 const nodeStyle = {
@@ -64,6 +71,15 @@ function fromFlow(nodes: Node[], edges: Edge[]) {
         tool_id: (n.data as any)?.tool_id,
         prompt: (n.data as any)?.prompt,
         inputs: (n.data as any)?.inputs,
+        retry_policy: (n.data as any)?.retry_policy,
+        risk_level: (n.data as any)?.risk_level,
+        reason: (n.data as any)?.reason,
+        expression: (n.data as any)?.expression,
+        mapping: (n.data as any)?.mapping,
+        items_path: (n.data as any)?.items_path,
+        max_iterations: (n.data as any)?.max_iterations,
+        branches: (n.data as any)?.branches,
+        template_id: (n.data as any)?.template_id,
       },
     })),
     edges: edges.map((e) => ({ id: e.id, source: e.source, target: e.target })),
@@ -233,6 +249,67 @@ export function WorkflowBuilder({
                     <option key={t.id} value={t.id}>{t.serverName} / {t.name}</option>
                   ))}
                 </select>
+              </>
+            )}
+            {(selected.data as any)?.nodeType === "approval" && (
+              <>
+                <label className="block text-slate-400">Risk level</label>
+                <select
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                  value={(selected.data as any)?.risk_level ?? "L2"}
+                  onChange={(e) => updateSelected({ risk_level: e.target.value })}
+                >
+                  {["L0","L1","L2","L3","L4"].map((r) => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <label className="block text-slate-400">Reason</label>
+                <input
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                  value={(selected.data as any)?.reason ?? ""}
+                  onChange={(e) => updateSelected({ reason: e.target.value })}
+                />
+              </>
+            )}
+            {(selected.data as any)?.nodeType === "decision" && (
+              <>
+                <label className="block text-slate-400">Left path</label>
+                <input
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                  value={(selected.data as any)?.expression?.left ?? ""}
+                  onChange={(e) => updateSelected({ expression: { ...(selected.data as any)?.expression, left: e.target.value } })}
+                />
+                <label className="block text-slate-400">Operator</label>
+                <select
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                  value={(selected.data as any)?.expression?.op ?? "=="}
+                  onChange={(e) => updateSelected({ expression: { ...(selected.data as any)?.expression, op: e.target.value } })}
+                >
+                  {["==","!=",">","<","in"].map((o) => <option key={o}>{o}</option>)}
+                </select>
+                <label className="block text-slate-400">Right value</label>
+                <input
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                  value={(selected.data as any)?.expression?.right ?? ""}
+                  onChange={(e) => updateSelected({ expression: { ...(selected.data as any)?.expression, right: e.target.value } })}
+                />
+              </>
+            )}
+            {((selected.data as any)?.nodeType === "agent" || (selected.data as any)?.nodeType === "mcp_tool") && (
+              <>
+                <label className="block text-slate-400">Retry policy</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number" min={1} placeholder="attempts"
+                    className="w-24 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                    value={(selected.data as any)?.retry_policy?.max_attempts ?? 1}
+                    onChange={(e) => updateSelected({ retry_policy: { ...(selected.data as any)?.retry_policy, max_attempts: Number(e.target.value) } })}
+                  />
+                  <input
+                    type="number" min={0} placeholder="backoff ms"
+                    className="w-28 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-white"
+                    value={(selected.data as any)?.retry_policy?.backoff_ms ?? 0}
+                    onChange={(e) => updateSelected({ retry_policy: { ...(selected.data as any)?.retry_policy, backoff_ms: Number(e.target.value) } })}
+                  />
+                </div>
               </>
             )}
           </div>

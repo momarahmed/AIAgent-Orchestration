@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **GitHub** | [momarahmed/AIAgent-Orchestration](https://github.com/momarahmed/AIAgent-Orchestration) |
-| **Current release** | `v1.0.1` |
+| **Current release** | `v1.2.0` (Phase 2 — Lifecycle & Reliability) |
 
 > Source PRDs: see `PRD/01..05-phase-*.md` for the five phased product requirements documents (with the **Enhanced** appendix added per the enterprise-grade enhancement prompt).
 

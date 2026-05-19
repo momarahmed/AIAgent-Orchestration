@@ -14,7 +14,12 @@ class Agent extends Model
 
     protected $fillable = [
         'tenant_id', 'project_id', 'name', 'slug', 'description',
-        'status', 'risk_level', 'current_version_id',
+        'status', 'risk_level', 'max_risk_level_without_approval',
+        'environment_config', 'current_version_id',
+    ];
+
+    protected $casts = [
+        'environment_config' => 'array',
     ];
 
     public function tenant(): BelongsTo

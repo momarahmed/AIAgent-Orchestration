@@ -1,0 +1,6 @@
+apiVersion: v2
+name: eamcp
+description: Enterprise AI + MCP + Multi-Agent + Workflow Builder Platform — Phase 2 Helm chart skeleton
+type: application
+version: 0.2.0
+appVersion: "1.2.0"

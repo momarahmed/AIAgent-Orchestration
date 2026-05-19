@@ -2,16 +2,36 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { runsApi } from "@/lib/api";
 import { PageHeader, StatusBadge, EmptyState } from "@/components/shared/PageHeader";
 
 export default function RunsPage() {
   const searchParams = useSearchParams();
+  const qc = useQueryClient();
   const [selected, setSelected] = useState<number | null>(null);
   const [status, setStatus] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [debugNode, setDebugNode] = useState("");
+  const [debugOutput, setDebugOutput] = useState<any | null>(null);
+
+  const replayMut = useMutation({
+    mutationFn: (id: number) => runsApi.replay(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["runs"] }),
+  });
+  const cancelMut = useMutation({
+    mutationFn: (id: number) => runsApi.cancel(id, "Cancelled from UI"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["runs"] }),
+  });
+  const resumeMut = useMutation({
+    mutationFn: (id: number) => runsApi.resume(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["runs"] }),
+  });
+  const debugMut = useMutation({
+    mutationFn: ({ id, nodeId }: { id: number; nodeId: string }) => runsApi.debugNode(id, nodeId),
+    onSuccess: setDebugOutput,
+  });
 
   useEffect(() => {
     const runParam = searchParams.get("run");
@@ -128,7 +148,27 @@ export default function RunsPage() {
                   {detail.data.started_at && <span>started {new Date(detail.data.started_at).toLocaleString()}</span>}
                   {detail.data.completed_at && <span>· finished {new Date(detail.data.completed_at).toLocaleString()}</span>}
                 </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button onClick={() => replayMut.mutate(detail.data!.id)} className="rounded-xl border border-slate-700 px-3 py-1 text-xs text-slate-200 hover:border-cyan-400/40">Replay</button>
+                  {detail.data.status === "awaiting_approval" && (
+                    <button onClick={() => resumeMut.mutate(detail.data!.id)} className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300 hover:bg-emerald-500/20">Resume</button>
+                  )}
+                  {(detail.data.status === "running" || detail.data.status === "awaiting_approval") && (
+                    <button onClick={() => cancelMut.mutate(detail.data!.id)} className="rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-1 text-xs text-rose-300 hover:bg-rose-500/20">Cancel</button>
+                  )}
+                </div>
               </div>
+
+              <section>
+                <h3 className="mb-2 text-sm font-semibold text-slate-300">Debug node</h3>
+                <div className="flex gap-2">
+                  <input value={debugNode} onChange={(e) => setDebugNode(e.target.value)} placeholder="node id (e.g. a1)" className="flex-1 rounded-xl border border-slate-800 bg-slate-900 px-3 py-1.5 text-sm text-white" />
+                  <button disabled={!debugNode} onClick={() => debugMut.mutate({ id: detail.data!.id, nodeId: debugNode })} className="rounded-xl bg-cyan-500 px-4 py-1.5 text-sm font-semibold text-slate-950 disabled:opacity-50">Run node</button>
+                </div>
+                {debugOutput && (
+                  <pre className="mt-2 max-h-64 overflow-auto rounded-xl border border-slate-800 bg-slate-950 p-3 text-[11px] text-slate-200">{JSON.stringify(debugOutput, null, 2)}</pre>
+                )}
+              </section>
 
               {(detail.data as any).output && (
                 <section>

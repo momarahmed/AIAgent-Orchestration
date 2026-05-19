@@ -10,6 +10,8 @@
 
 ## Key Learnings
 
+- **Cursor IDE:** OpenWolf lifecycle hooks are wired via `.cursor/hooks.json` → `.cursor/hooks/openwolf-*.sh` (not only `.claude/settings.json`). Restart Cursor after changing hooks.
+- **Daemon:** If dashboard fails, run `fuser -k 18791/tcp` then `openwolf daemon start` from project root.
 - **Project:** AI agent orchestration
 - **Description:** A vendor-neutral, build-custom-first platform that unifies **AI Agents**, **MCP Servers**, **Visual Workflows**, **Templates**, **Approvals**, and **Observability** under a single asset model — implem
 

@@ -1,14 +1,14 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T01:29:01.693Z
-> Files: 188 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-05-19T02:39:10.952Z
+> Files: 259 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ./
 
 - `.gitignore` — Git ignore rules (~229 tok)
 - `CLAUDE.md` — OpenWolf (~57 tok)
-- `docker-compose.yml` — Docker Compose services (~1202 tok)
-- `README.md` — Project documentation (~2178 tok)
+- `docker-compose.yml` — Docker Compose services (~2234 tok)
+- `README.md` — Project documentation (~2187 tok)
 
 ## .claude/
 
@@ -17,6 +17,21 @@
 ## .claude/rules/
 
 - `openwolf.md` (~313 tok)
+
+## .cursor/
+
+- `hooks.json` (~308 tok)
+
+## .cursor/hooks/
+
+- `openwolf-env.sh` — Resolve project root and export vars OpenWolf hooks expect. (~68 tok)
+- `openwolf-post-read.sh` (~68 tok)
+- `openwolf-post-write.sh` (~68 tok)
+- `openwolf-pre-read.sh` (~76 tok)
+- `openwolf-pre-write.sh` (~68 tok)
+- `openwolf-session.sh` (~68 tok)
+- `openwolf-stop.sh` (~65 tok)
+- `transform.mjs` — Transform Cursor hook stdin JSON → OpenWolf (Claude Code) hook format. (~662 tok)
 
 ## PRD/
 
@@ -57,6 +72,7 @@
 - `.editorconfig` — Editor configuration (~68 tok)
 - `.gitattributes` — Git attributes (~50 tok)
 - `.gitignore` — Git ignore rules (~76 tok)
+- `.phpunit.result.cache` (~158 tok)
 - `artisan` — Laravel CLI entry point (~114 tok)
 - `composer.json` — PHP package manifest (~824 tok)
 - `Dockerfile` — Docker container definition (~284 tok)
@@ -65,47 +81,93 @@
 - `README.md` — Project documentation (~978 tok)
 - `vite.config.js` — Vite build configuration (~125 tok)
 
+## backend/app/Contracts/
+
+- `ModelProvider.php` — Interface: ModelProvider (3 methods) (~115 tok)
+- `WorkflowEngine.php` — WorkflowEngine — abstract contract that hides the underlying engine (~219 tok)
+
 ## backend/app/Http/Controllers/
 
 - `Controller.php` — Controller: Controller (~21 tok)
 
 ## backend/app/Http/Controllers/Api/
 
-- `AgentController.php` — index, store, show, update, destroy + 1 more (~1661 tok)
+- `AgentController.php` — AG-013 — agent execution history via task runs on agent nodes. (~1776 tok)
+- `ApprovalController.php` — index, show, approve, reject (~378 tok)
 - `AuditController.php` — index (~192 tok)
 - `AuthController.php` — login, register, me, logout (~690 tok)
-- `McpServerController.php` — index, store, show, update, destroy + 1 more (~1658 tok)
+- `ChatController.php` — Phase-1 Chat UI backend — single-turn prompt execution with run record (UX-002). (~1060 tok)
+- `CodegenController.php` — generateMcp, show, index (~351 tok)
+- `CopyController.php` — copyAgent, copyMcp, copyWorkflow (~1340 tok)
+- `DebugController.php` — debugAgent, debugTool, debugWorkflowNode, replayRun, resumeRun + 1 more (~754 tok)
+- `DeploymentController.php` — index, show, store, approve, rollback (~560 tok)
+- `McpServerController.php` — index, store, show, update, destroy + 1 more (~1871 tok)
 - `MetricsController.php` — Aggregate KPI / dashboard metrics for the Platform Console. (~924 tok)
 - `ProjectController.php` — index, store, show, update, destroy (~588 tok)
-- `RunController.php` — index, show (~192 tok)
+- `RunController.php` — index, show (~235 tok)
+- `SecretController.php` — index, store, destroy (~421 tok)
+- `TemplateController.php` — Phase-1 template stub — full lifecycle in Phase 2. (~370 tok)
+- `TemplateLifecycleController.php` — fromAsset, exportJson, exportZip, importJson, importZip + 1 more (~723 tok)
 - `TenantController.php` — index, store, show, update, destroy (~526 tok)
-- `WorkflowController.php` — Execute a workflow synchronously. This is the Phase-1 in-process runner — (~3323 tok)
+- `TestController.php` — index, store, show, run, execution (~485 tok)
+- `ToolController.php` — index, store, update, destroy (~631 tok)
+- `VersionController.php` — agentVersions, workflowVersions, mcpVersions, diffAgent, diffWorkflow + 3 more (~914 tok)
+- `WorkflowController.php` — index, store, show, update, destroy + 1 more (~1546 tok)
 
 ## backend/app/Models/
 
-- `Agent.php` — Model — 8 fields, 4 rels (~252 tok)
+- `Agent.php` — Model — 10 fields, 2 casts, 4 rels (~289 tok)
 - `AgentVersion.php` — Model — 10 fields, 8 casts, 1 rels (~194 tok)
+- `Approval.php` — Model — 14 fields, 8 casts (~182 tok)
 - `AuditEvent.php` — Model — 10 fields, 2 casts (~116 tok)
+- `CodegenJob.php` — Model — 12 fields, 8 casts (~128 tok)
+- `Deployment.php` — Model — 15 fields, 10 casts, 1 rels (~199 tok)
 - `McpServer.php` — Model — 14 fields, 4 casts, 4 rels (~300 tok)
 - `McpServerVersion.php` — Model — 4 fields, 2 casts, 1 rels (~131 tok)
 - `Project.php` — Model — 5 fields, 2 casts, 4 rels (~239 tok)
+- `Role.php` — Model — 3 fields, 2 casts (~57 tok)
+- `SecretRef.php` — Model — table: secret_refs, 8 fields, 2 casts (~115 tok)
 - `TaskRun.php` — Model — 10 fields, 8 casts, 2 rels (~229 tok)
 - `Template.php` — Model — 8 fields, 4 casts (~133 tok)
 - `Tenant.php` — Model — 4 fields, 2 casts, 2 rels (~199 tok)
+- `TestExecution.php` — Model — 11 fields, 6 casts, 1 rels (~150 tok)
+- `TestSuite.php` — Model — 8 fields, 2 casts, 1 rels (~111 tok)
 - `Tool.php` — Model — 7 fields, 6 casts, 1 rels (~172 tok)
 - `ToolCall.php` — Model — 9 fields, 4 casts (~115 tok)
 - `User.php` — Model — 3 fields, 1 rels (~214 tok)
-- `Workflow.php` — Model — 8 fields, 4 rels (~255 tok)
-- `WorkflowRun.php` — Model — 9 fields, 8 casts, 2 rels (~223 tok)
+- `Workflow.php` — Model — 11 fields, 4 casts, 4 rels (~298 tok)
+- `WorkflowRun.php` — Model — 14 fields, 14 casts, 3 rels (~309 tok)
 - `WorkflowVersion.php` — Model — 6 fields, 6 casts, 1 rels (~160 tok)
 
 ## backend/app/Providers/
 
-- `AppServiceProvider.php` — Register any application services. (~97 tok)
+- `AppServiceProvider.php` — Service provider: AppServiceProvider (~144 tok)
+
+## backend/app/Services/
+
+- `AgentRuntime.php` — Agent runtime — uses ProviderRegistry (Phase 2) so OpenAI / Claude (~424 tok)
+- `ApprovalService.php` — Approval Queue — pause/resume gate for risky tool calls and deployments. (~679 tok)
+- `DeploymentService.php` — Execute the Phase 2 promotion pipeline: (~1430 tok)
+- `DurableWorkflowEngine.php` — Phase 2 durable workflow engine. (~4816 tok)
+- `McpGateway.php` — Phase-1 MCP Gateway prototype — Tool Registry (DB) + Client Manager (HTTP ping). (~884 tok)
+- `OpaPolicyService.php` — Basic policy engine — Phase 2. (~795 tok)
+- `OpenHandsClient.php` — OpenHands Software Agent SDK client (Phase 2). (~786 tok)
+- `ProviderRegistry.php` — Model Control Plane (Phase 2 baseline) — routes calls to a configured provider. (~256 tok)
+- `SecretService.php` — Resolve secret references via HashiCorp Vault (KV v2). (~676 tok)
+- `TemplateService.php` — Template Manager — create, export (JSON/YAML/ZIP), import (manifest+secret-scan), (~3603 tok)
+- `TestRunnerService.php` — TestRunnerService: execute, runForAsset (~1043 tok)
+- `VersionDiffService.php` — Recursive JSON diff. Returns added/removed/changed. (~570 tok)
+- `WorkflowRuntime.php` — Phase-1 synchronous workflow engine (LangGraph-style state machine in-process). (~1409 tok)
+
+## backend/app/Services/Providers/
+
+- `ClaudeProvider.php` — ClaudeProvider: name, supportsModel, complete (~543 tok)
+- `OpenAiProvider.php` — OpenAiProvider: name, supportsModel, complete (~496 tok)
 
 ## backend/app/Support/
 
 - `Audit.php` — Tiny helper to record audit events. Phase 1 baseline; full export (~281 tok)
+- `WorkflowGraphValidator.php` — Phase-1 workflow graph validation (WF-001 save rules). (~524 tok)
 
 ## backend/bootstrap/
 
@@ -148,10 +210,11 @@
 - `0001_01_01_000002_create_jobs_table.php` — Run the migrations. (~484 tok)
 - `2026_05_19_000001_create_platform_core_tables.php` — Phase 1 / 2 asset model — Tenants, Projects, Users, Agents, MCP Servers, (~3231 tok)
 - `2026_05_19_005628_create_personal_access_tokens_table.php` — Run the migrations. (~231 tok)
+- `2026_05_19_100000_create_phase2_lifecycle_tables.php` — Phase 2 — Lifecycle & Reliability tables (~2585 tok)
 
 ## backend/database/seeders/
 
-- `DatabaseSeeder.php` — Database seeder: DatabaseSeeder (~1733 tok)
+- `DatabaseSeeder.php` — DatabaseSeeder: run (~2727 tok)
 
 ## backend/docker/
 
@@ -178,7 +241,7 @@
 
 ## backend/routes/
 
-- `api.php` (~564 tok)
+- `api.php` (~1876 tok)
 - `console.php` (~56 tok)
 - `web.php` (~29 tok)
 
@@ -225,6 +288,7 @@
 - `0cd3f42f50837d1c0987bdb8d9888ff2.php` — PATH /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/file-with-line.blade.ph... (~490 tok)
 - `0d91cc84ca3ef31e353ece892735402b.php` — total: totalPages, hasPrevious, hasNext, visiblePages (~6103 tok)
 - `136a7c656d1a0ed4e2d0901fc10aa84a.php` — PATH /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/icons/copy.blade.php EN... (~167 tok)
+- `19d1ca22cd8db231f88e0685e9c3a20e.php` (~22080 tok)
 - `1bbc6102c081b21bf9f2f593a9b0e218.php` — PATH /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/routing-parameter.blade... (~1217 tok)
 - `25559de93bb3f75197f65d31431cc854.php` — PATH /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/vendor-frames.blade.php... (~2862 tok)
 - `25b0d221b0b3a2f9f0f84bf62ea8d4d3.php` — PATH /var/www/html/vendor/laravel/framework/src/Illuminate/Foundation/Providers/../resources/exceptions/renderer/components/separator.blade.php END... (~103 tok)
@@ -264,7 +328,7 @@
 ## backend/storage/logs/
 
 - `.gitignore` — Git ignore rules (~4 tok)
-- `laravel.log` (~22010 tok)
+- `laravel.log` (~106711 tok)
 
 ## backend/tests/
 
@@ -273,21 +337,34 @@
 ## backend/tests/Feature/
 
 - `ExampleTest.php` — A basic test example. (~96 tok)
+- `PlatformPhase1Test.php` — PlatformPhase1Test: test_health_endpoint, test_login_and_me, test_agent_crud_creates_version_and_audit, test_mcp_health_check + 2 more (~911 tok)
+- `PlatformPhase2Test.php` — PlatformPhase2Test: test_approval_queue_endpoint_returns_paginated, test_approval_gated_workflow_pau (~1669 tok)
 
 ## backend/tests/Unit/
 
 - `ExampleTest.php` — A basic test example. (~65 tok)
+
+## docs/
+
+- `PHASE1_CHECKLIST.md` — Phase 1 Completion Checklist (~586 tok)
+- `PHASE2_CHECKLIST.md` — Phase 2 — Lifecycle & Reliability — Completion Checklist (~1596 tok)
+- `PHASE2_MIGRATION.md` — Phase 2 — Migration Guide (~344 tok)
+
+## docs/kubernetes/
+
+- `README.md` — Project documentation (~378 tok)
 
 ## frontend/
 
 - `Dockerfile` — Docker container definition (~146 tok)
 - `next-env.d.ts` — / <reference types="next" /> (~75 tok)
 - `next.config.mjs` — Next.js configuration (~113 tok)
-- `package-lock.json` — npm lock file (~81345 tok)
-- `package.json` — Node.js package manifest (~325 tok)
+- `package-lock.json` — npm lock file (~83048 tok)
+- `package.json` — Node.js package manifest (~335 tok)
 - `postcss.config.mjs` (~22 tok)
 - `tailwind.config.ts` — Tailwind CSS configuration (~183 tok)
 - `tsconfig.json` — TypeScript configuration (~173 tok)
+- `tsconfig.tsbuildinfo` (~72483 tok)
 
 ## frontend/docker/
 
@@ -310,7 +387,19 @@
 
 ## frontend/src/app/(app)/agents/
 
-- `page.tsx` — AgentsPage — renders table, modal — uses useState, useQuery, useMemo, useMutation (~2380 tok)
+- `page.tsx` — AgentsPage — renders table, modal (~5284 tok)
+
+## frontend/src/app/(app)/approvals/
+
+- `page.tsx` — STATUS_BADGE — renders table (~1733 tok)
+
+## frontend/src/app/(app)/chat/
+
+- `page.tsx` — ChatPage — renders form — uses useState (~1052 tok)
+
+## frontend/src/app/(app)/codegen/
+
+- `page.tsx` — CodegenPage — renders table (~1448 tok)
 
 ## frontend/src/app/(app)/console/
 
@@ -320,9 +409,13 @@
 
 - `page.tsx` — DashboardUI — uses useQuery (~651 tok)
 
+## frontend/src/app/(app)/deployments/
+
+- `page.tsx` — ENVIRONMENTS — renders table (~3097 tok)
+
 ## frontend/src/app/(app)/mcp-servers/
 
-- `page.tsx` — McpServersPage — renders modal — uses useState, useQuery, useMemo, useMutation (~2131 tok)
+- `page.tsx` — McpServersPage — renders modal (~2905 tok)
 
 ## frontend/src/app/(app)/platform/
 
@@ -330,11 +423,20 @@
 
 ## frontend/src/app/(app)/runs/
 
-- `page.tsx` — RunsPage — renders table — uses useQuery, useMemo (~1734 tok)
+- `layout.tsx` — RunsLayout (~71 tok)
+- `page.tsx` — RunsPage — renders table (~3156 tok)
+
+## frontend/src/app/(app)/templates/
+
+- `page.tsx` — TemplatesPage (~3261 tok)
 
 ## frontend/src/app/(app)/workflows/
 
-- `page.tsx` — WorkflowsPage — renders modal — uses useState, useQuery, useMemo, useMutation (~1997 tok)
+- `page.tsx` — WorkflowsPage — renders modal — uses useState, useQuery, useMemo, useMutation (~2058 tok)
+
+## frontend/src/app/(app)/workflows/[id]/edit/
+
+- `page.tsx` — WorkflowEditPage — uses useParams, useQuery (~530 tok)
 
 ## frontend/src/app/(auth)/login/
 
@@ -342,7 +444,7 @@
 
 ## frontend/src/components/app-shell/
 
-- `AppShell.tsx` — NAV — uses useRouter, useState, useEffect, useMemo (~2151 tok)
+- `AppShell.tsx` — NAV (~2490 tok)
 
 ## frontend/src/components/shared/
 
@@ -356,11 +458,37 @@
 - `EnterpriseAIMCPPlatformConsole.tsx` — navSections (~10632 tok)
 - `EnterpriseAIMCPPlatformPage.tsx` — platformLayers (~7750 tok)
 
+## frontend/src/components/workflow/
+
+- `WorkflowBuilder.tsx` — NODE_TYPES_LIST (~3707 tok)
+
 ## frontend/src/lib/
 
-- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~1847 tok)
-- `auth-context.tsx` — AuthContext (~882 tok)
+- `api.ts` — Centralised API client for the Enterprise AI MCP Platform backend. (~3307 tok)
+- `auth-context.tsx` — AuthContext (~1359 tok)
 
 ## frontend/src/theme/
 
 - `mui-theme.ts` — Futuristic enterprise dark theme — neon cyan + violet accents. (~388 tok)
+
+## infra/
+
+- `otel-collector-config.yaml` (~146 tok)
+
+## infra/helm/eamcp/
+
+- `Chart.yaml` (~53 tok)
+- `values.yaml` (~267 tok)
+
+## infra/helm/eamcp/templates/
+
+- `_helpers.tpl` (~78 tok)
+- `backend-deployment.yaml` — K8s Deployment (~302 tok)
+
+## infra/opa/
+
+- `eamcp.rego` (~269 tok)
+
+## infra/openhands/
+
+- `index.html` — OpenHands SDK Sandbox (Phase 2 stub) (~117 tok)

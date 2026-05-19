@@ -12,17 +12,26 @@ class WorkflowRun extends Model
     use HasFactory;
 
     protected $fillable = [
-        'workflow_id', 'workflow_version_id', 'status',
+        'workflow_id', 'workflow_version_id', 'status', 'environment', 'attempt',
         'input', 'output', 'error',
-        'started_at', 'completed_at', 'triggered_by',
+        'started_at', 'completed_at', 'paused_at', 'resumed_at', 'checkpoint',
+        'triggered_by',
     ];
 
     protected $casts = [
         'input' => 'array',
         'output' => 'array',
+        'checkpoint' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'paused_at' => 'datetime',
+        'resumed_at' => 'datetime',
     ];
+
+    public function workflowVersion(): BelongsTo
+    {
+        return $this->belongsTo(WorkflowVersion::class, 'workflow_version_id');
+    }
 
     public function workflow(): BelongsTo
     {

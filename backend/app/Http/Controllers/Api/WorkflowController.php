@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Contracts\WorkflowEngine;
 use App\Models\Workflow;
-use App\Services\WorkflowRuntime;
 use App\Support\Audit;
 use App\Support\WorkflowGraphValidator;
 use Illuminate\Http\JsonResponse;
@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 
 class WorkflowController extends Controller
 {
-    public function __construct(protected WorkflowRuntime $runtime) {}
+    public function __construct(protected WorkflowEngine $runtime) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -110,14 +110,23 @@ class WorkflowController extends Controller
 
     public function run(Request $request, Workflow $workflow): JsonResponse
     {
-        $payload = $request->validate(['input' => 'sometimes|array']);
+        $payload = $request->validate([
+            'input' => 'sometimes|array',
+            'environment' => 'sometimes|in:dev,test,staging,prod',
+        ]);
         $version = $workflow->currentVersion;
         if (! $version) {
             return response()->json(['error' => 'Workflow has no version to execute.'], 422);
         }
 
-        $run = $this->runtime->run($workflow, $version, $payload['input'] ?? [], $request->user()?->id);
-        Audit::record('run', 'workflow.run', 'workflow', $workflow->id, ['run_id' => $run->id, 'status' => $run->status], $request, $workflow->tenant_id, $workflow->project_id);
+        $run = $this->runtime->run(
+            $workflow,
+            $version,
+            $payload['input'] ?? [],
+            $request->user()?->id,
+            $payload['environment'] ?? 'dev',
+        );
+        Audit::record('run', 'workflow.run', 'workflow', $workflow->id, ['run_id' => $run->id, 'status' => $run->status, 'environment' => $run->environment], $request, $workflow->tenant_id, $workflow->project_id);
         return response()->json($run);
     }
 }

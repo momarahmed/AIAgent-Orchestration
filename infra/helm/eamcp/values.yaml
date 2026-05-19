@@ -1,0 +1,55 @@
+global:
+  image:
+    registry: ghcr.io/eamcp
+    pullPolicy: IfNotPresent
+
+backend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: backend
+    tag: "1.2.0"
+  service:
+    port: 8000
+  env:
+    APP_ENV: production
+    OPA_URL: http://opa.eamcp.svc.cluster.local:8181
+    VAULT_ADDR: http://vault.eamcp.svc.cluster.local:8200
+    TEMPORAL_HOST: temporal-frontend.eamcp.svc.cluster.local:7233
+
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: frontend
+    tag: "1.2.0"
+  service:
+    port: 3000
+
+mysql:
+  enabled: true
+  auth:
+    rootPassword: "change-me-in-production"
+    database: eamcp
+
+redis:
+  enabled: true
+
+opa:
+  enabled: true
+  replicaCount: 2
+
+vault:
+  enabled: false  # Use managed cloud key vault in production
+
+temporal:
+  enabled: true
+  cluster:
+    history:
+      replicaCount: 2
+    matching:
+      replicaCount: 2
+    frontend:
+      replicaCount: 2
+    worker:
+      replicaCount: 3

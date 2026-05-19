@@ -38,8 +38,10 @@ frontend/.env
 .vscode/
 .idea/
 .claude/
+.cursor/
 *.swp
 .DS_Store
+frontend/tsconfig.tsbuildinfo
 
 # OpenWolf runtime state (keep docs/config in repo)
 .wolf/daemon.log

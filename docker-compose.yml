@@ -91,6 +91,13 @@ services:
       SESSION_DRIVER: redis
       SANCTUM_STATEFUL_DOMAINS: 127.0.0.1:3020,localhost:3020
       SESSION_DOMAIN: ""
+      OPA_URL: http://opa:8181
+      VAULT_ADDR: http://vault:8200
+      VAULT_TOKEN: ${VAULT_DEV_ROOT_TOKEN:-eamcp-dev-root}
+      OPENHANDS_URL: http://openhands:8000
+      TEMPORAL_HOST: temporal:7233
+      TEMPORAL_NAMESPACE: default
+      APPROVAL_TIMEOUT_DAYS: "7"
     ports:
       - "127.0.0.1:8089:8000"
     volumes:
@@ -128,6 +135,93 @@ services:
       - eamcp-net
 
   # -------------------------------------------------------------------
+  # OPA — Phase 2 basic policy engine (risk-level + agent allowlist)
+  # -------------------------------------------------------------------
+  opa:
+    image: openpolicyagent/opa:0.66.0-rootless
+    container_name: eamcp-opa
+    restart: unless-stopped
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "/policies"
+    volumes:
+      - ./infra/opa:/policies:ro
+    ports:
+      - "127.0.0.1:8181:8181"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # HashiCorp Vault — Phase 2 secret references (dev mode)
+  # -------------------------------------------------------------------
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: eamcp-vault
+    restart: unless-stopped
+    cap_add:
+      - IPC_LOCK
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_DEV_ROOT_TOKEN:-eamcp-dev-root}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    ports:
+      - "127.0.0.1:8200:8200"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # OpenHands SDK sandbox — Phase 2 stub
+  # Replaced by the real OpenHands runtime container in Phase 3.
+  # -------------------------------------------------------------------
+  openhands:
+    image: python:3.12-slim
+    container_name: eamcp-openhands
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./infra/openhands:/app:ro
+    command: ["python", "-m", "http.server", "8000"]
+    ports:
+      - "127.0.0.1:8800:8000"
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Temporal stub — Phase 2 design entry. Real Temporal cluster lands in
+  # Phase 3 alongside the production worker rollout.
+  # -------------------------------------------------------------------
+  temporal:
+    image: temporalio/auto-setup:1.24
+    container_name: eamcp-temporal
+    restart: unless-stopped
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_SEEDS: temporal-postgres
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+    depends_on:
+      - temporal-postgres
+    ports:
+      - "127.0.0.1:7233:7233"
+    networks:
+      - eamcp-net
+
+  temporal-postgres:
+    image: postgres:14-alpine
+    container_name: eamcp-temporal-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+      POSTGRES_DB: temporal
+    volumes:
+      - eamcp_temporal_pg:/var/lib/postgresql/data
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
   # OpenTelemetry Collector — Phase 1 observability (debug exporter)
   # -------------------------------------------------------------------
   otel-collector:
@@ -149,6 +243,7 @@ volumes:
   eamcp_backend_vendor:
   eamcp_frontend_node_modules:
   eamcp_frontend_next:
+  eamcp_temporal_pg:
 
 networks:
   eamcp-net:

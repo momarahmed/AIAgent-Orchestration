@@ -15,6 +15,12 @@ class Workflow extends Model
     protected $fillable = [
         'tenant_id', 'project_id', 'name', 'slug', 'description',
         'status', 'trigger_type', 'current_version_id',
+        'risk_level', 'schedule_config', 'retry_policy',
+    ];
+
+    protected $casts = [
+        'schedule_config' => 'array',
+        'retry_policy' => 'array',
     ];
 
     public function project(): BelongsTo

@@ -147,12 +147,73 @@ export const workflowsApi = {
   create: (payload: any) => api.post<Workflow>("/api/workflows", payload).then((r) => r.data),
   update: (id: number, payload: any) => api.put<Workflow>(`/api/workflows/${id}`, payload).then((r) => r.data),
   remove: (id: number) => api.delete(`/api/workflows/${id}`),
-  run: (id: number, input: any = {}) => api.post<WorkflowRun>(`/api/workflows/${id}/run`, { input }).then((r) => r.data),
+  run: (id: number, input: any = {}, environment: string = "dev") =>
+    api.post<WorkflowRun>(`/api/workflows/${id}/run`, { input, environment }).then((r) => r.data),
+  copy: (id: number, name?: string) => api.post(`/api/workflows/${id}/copy`, { name }).then((r) => r.data),
+  versions: (id: number) => api.get(`/api/workflows/${id}/versions`).then((r) => r.data.data),
+  diff: (id: number, a: number, b: number) => api.get(`/api/workflows/${id}/versions/${a}/diff/${b}`).then((r) => r.data),
+  rollback: (id: number, version: number) => api.post(`/api/workflows/${id}/versions/${version}/rollback`).then((r) => r.data),
 };
 
 export const runsApi = {
   list: (params: Record<string, any> = {}) => api.get("/api/runs", { params }).then((r) => r.data.data),
   get: (id: number) => api.get<WorkflowRun>(`/api/runs/${id}`).then((r) => r.data),
+  resume: (id: number, input: any = {}) => api.post(`/api/runs/${id}/resume`, { input }).then((r) => r.data),
+  cancel: (id: number, reason?: string) => api.post(`/api/runs/${id}/cancel`, { reason }).then((r) => r.data),
+  replay: (id: number, fromNodeId?: string, overrides: any = {}) =>
+    api.post(`/api/runs/${id}/replay`, { from_node_id: fromNodeId, overrides }).then((r) => r.data),
+  debugNode: (id: number, nodeId: string, input: any = {}) =>
+    api.post(`/api/runs/${id}/debug-node`, { node_id: nodeId, input }).then((r) => r.data),
+};
+
+export const approvalsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/approvals", { params }).then((r) => r.data.data),
+  approve: (id: number, comment?: string) => api.post(`/api/approvals/${id}/approve`, { comment }).then((r) => r.data),
+  reject: (id: number, comment?: string) => api.post(`/api/approvals/${id}/reject`, { comment }).then((r) => r.data),
+};
+
+export const deploymentsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/deployments", { params }).then((r) => r.data.data),
+  create: (payload: any) => api.post("/api/deployments", payload).then((r) => r.data),
+  approve: (id: number) => api.post(`/api/deployments/${id}/approve`).then((r) => r.data),
+  rollback: (id: number, reason?: string) => api.post(`/api/deployments/${id}/rollback`, { reason }).then((r) => r.data),
+};
+
+export const versionsApi = {
+  agent: (id: number) => api.get(`/api/agents/${id}/versions`).then((r) => r.data.data),
+  agentDiff: (id: number, a: number, b: number) => api.get(`/api/agents/${id}/versions/${a}/diff/${b}`).then((r) => r.data),
+  agentRollback: (id: number, version: number) => api.post(`/api/agents/${id}/versions/${version}/rollback`).then((r) => r.data),
+};
+
+export const templateLifecycleApi = {
+  fromAsset: (payload: any) => api.post("/api/templates/from-asset", payload).then((r) => r.data),
+  exportJson: (id: number) => api.get(`/api/templates/${id}/export.json`).then((r) => r.data),
+  importJson: (manifest: any, tenantId?: number) => api.post("/api/templates/import", { manifest, tenant_id: tenantId }).then((r) => r.data),
+  instantiate: (id: number, payload: any) => api.post(`/api/templates/${id}/instantiate`, payload).then((r) => r.data),
+};
+
+export const debugApi = {
+  agent: (agentId: number, prompt: string, context: any = {}) =>
+    api.post(`/api/agents/${agentId}/debug`, { prompt, context }).then((r) => r.data),
+  tool: (toolId: number, inputs: any = {}) => api.post(`/api/tools/${toolId}/debug`, { inputs }).then((r) => r.data),
+};
+
+export const codegenApi = {
+  generateMcp: (payload: { tenant_id: number; prompt: string; inputs?: any }) =>
+    api.post("/api/codegen/mcp", payload).then((r) => r.data),
+  list: (params: Record<string, any> = {}) => api.get("/api/codegen", { params }).then((r) => r.data.data),
+};
+
+export const testsApi = {
+  list: (params: Record<string, any> = {}) => api.get("/api/tests", { params }).then((r) => r.data.data),
+  create: (payload: any) => api.post("/api/tests", payload).then((r) => r.data),
+  run: (id: number) => api.post(`/api/tests/${id}/run`).then((r) => r.data),
+};
+
+export const copyApi = {
+  agent: (id: number, name?: string) => api.post(`/api/agents/${id}/copy`, { name }).then((r) => r.data),
+  mcp: (id: number, name?: string) => api.post(`/api/mcp-servers/${id}/copy`, { name }).then((r) => r.data),
+  workflow: (id: number, name?: string) => api.post(`/api/workflows/${id}/copy`, { name }).then((r) => r.data),
 };
 
 export const metricsApi = {

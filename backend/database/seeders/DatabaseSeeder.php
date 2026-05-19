@@ -105,6 +105,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Diagnoses ArcGIS layer/service health and reports issues.',
                 'status' => 'draft',
                 'risk_level' => 'L2',
+                'max_risk_level_without_approval' => 'L2',
             ]
         );
         $agentVersion = AgentVersion::firstOrCreate(
@@ -157,6 +158,52 @@ class DatabaseSeeder extends Seeder
                 'asset_type' => 'workflow',
                 'description' => 'Anchor scenario template — Trigger → Agent → MCP Tool.',
                 'payload' => ['workflow_slug' => 'hello-world'],
+            ]
+        );
+
+        // ---- Phase 2 demo: an Approval-gated workflow ----
+        $approvalWf = Workflow::firstOrCreate(
+            ['project_id' => $project->id, 'slug' => 'approval-gated-publish'],
+            [
+                'tenant_id' => $primary->id,
+                'name' => 'Approval-Gated Publish',
+                'description' => 'Trigger → Agent → Approval → MCP write-back. Demonstrates HITL pause.',
+                'trigger_type' => 'manual',
+                'status' => 'draft',
+                'risk_level' => 'L3',
+            ]
+        );
+        $writeTool = Tool::where('mcp_server_id', $mcp->id)->where('name', 'create_feature')->first();
+        $approvalGraph = [
+            'nodes' => [
+                ['id' => 't1', 'type' => 'trigger',  'position' => ['x' => 80,  'y' => 200], 'data' => ['label' => 'Manual']],
+                ['id' => 'a1', 'type' => 'agent',    'position' => ['x' => 280, 'y' => 200], 'data' => ['label' => 'GIS Health', 'agent_id' => $agent->id, 'prompt' => 'Plan a write-back to the Roads layer.']],
+                ['id' => 'p1', 'type' => 'approval', 'position' => ['x' => 480, 'y' => 200], 'data' => ['label' => 'Manager review', 'risk_level' => 'L3', 'reason' => 'Production write-back approval']],
+                ['id' => 'm1', 'type' => 'mcp_tool', 'position' => ['x' => 700, 'y' => 200], 'data' => ['label' => 'create_feature', 'tool_id' => $writeTool?->id, 'inputs' => ['layer' => 'roads']]],
+            ],
+            'edges' => [
+                ['id' => 'e1', 'source' => 't1', 'target' => 'a1'],
+                ['id' => 'e2', 'source' => 'a1', 'target' => 'p1'],
+                ['id' => 'e3', 'source' => 'p1', 'target' => 'm1'],
+            ],
+        ];
+        $approvalVersion = WorkflowVersion::firstOrCreate(
+            ['workflow_id' => $approvalWf->id, 'version' => 1],
+            ['graph_json' => $approvalGraph, 'variables' => []]
+        );
+        $approvalWf->update(['current_version_id' => $approvalVersion->id]);
+
+        // Phase 2 demo test suite
+        \App\Models\TestSuite::firstOrCreate(
+            ['asset_type' => 'agent', 'asset_id' => $agent->id, 'name' => 'GIS Health agent smoke'],
+            [
+                'tenant_id' => $primary->id,
+                'project_id' => $project->id,
+                'description' => 'Phase 2 sample test suite for GIS Health agent.',
+                'cases' => [
+                    ['name' => 'greets', 'prompt' => 'Hello, can you confirm you are online?', 'expected' => null],
+                    ['name' => 'tool_aware', 'prompt' => 'Which MCP tools can you call?', 'expected' => null],
+                ],
             ]
         );
     }

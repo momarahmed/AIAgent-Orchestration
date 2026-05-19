@@ -2,21 +2,19 @@
 
 namespace App\Providers;
 
+use App\Contracts\WorkflowEngine;
+use App\Services\DurableWorkflowEngine;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        // Phase 2: bind the durable engine behind the WorkflowEngine contract.
+        // A future Temporal-backed engine will swap this single binding.
+        $this->app->bind(WorkflowEngine::class, DurableWorkflowEngine::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //

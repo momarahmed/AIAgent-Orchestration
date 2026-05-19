@@ -1,53 +1,18 @@
 {
-  "session_id": "",
+  "session_id": "session-2026-05-19-0439",
+  "started": "2026-05-19T02:39:22.297Z",
   "files_read": {
-    "/opt/AI agent orchestration/frontend/src/app/layout.tsx": {
-      "count": 2,
-      "tokens": 270,
-      "first_read": "2026-05-19T01:15:52.706Z"
-    },
-    "/opt/AI agent orchestration/frontend/src/lib/api.ts": {
-      "count": 2,
-      "tokens": 1814,
-      "first_read": "2026-05-19T01:17:24.317Z"
-    },
-    "/opt/AI agent orchestration/backend/bootstrap/app.php": {
-      "count": 2,
-      "tokens": 234,
-      "first_read": "2026-05-19T01:17:24.376Z"
-    },
-    "/opt/AI agent orchestration/backend/config/sanctum.php": {
-      "count": 1,
-      "tokens": 828,
-      "first_read": "2026-05-19T01:17:24.440Z"
-    },
-    "/opt/AI agent orchestration/backend/config/cors.php": {
-      "count": 1,
-      "tokens": 111,
-      "first_read": "2026-05-19T01:17:24.585Z"
-    },
-    "/opt/AI agent orchestration/backend/routes/api.php": {
-      "count": 1,
-      "tokens": 564,
-      "first_read": "2026-05-19T01:17:32.264Z"
-    },
-    "/opt/AI agent orchestration/frontend/package.json": {
-      "count": 2,
-      "tokens": 325,
-      "first_read": "2026-05-19T01:22:34.707Z"
-    },
     "/opt/AI agent orchestration/.gitignore": {
       "count": 2,
-      "tokens": 196,
-      "first_read": "2026-05-19T01:28:41.423Z"
-    },
-    "/opt/AI agent orchestration/README.md": {
-      "count": 2,
-      "tokens": 2129,
-      "first_read": "2026-05-19T01:28:55.066Z"
+      "tokens": 20,
+      "first_read": "2026-05-19T02:39:26.226Z"
     }
   },
-  "anatomy_hits": 9,
+  "files_written": [],
+  "edit_counts": {},
+  "anatomy_hits": 1,
   "anatomy_misses": 0,
-  "repeated_reads_warned": 6
+  "repeated_reads_warned": 1,
+  "cerebrum_warnings": 0,
+  "stop_count": 0
 }
