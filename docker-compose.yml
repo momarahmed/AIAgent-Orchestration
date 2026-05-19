@@ -1,0 +1,137 @@
+# =====================================================================
+# Enterprise AI MCP Management Platform — Local Dev Stack
+# Stack: Next.js (latest) + MUI / Laravel 12 / MySQL 8.4 / Redis 7
+# Host: 127.0.0.1
+#   Frontend  -> http://127.0.0.1:3020
+#   Backend   -> http://127.0.0.1:8089
+#   MySQL     -> 127.0.0.1:3308
+#   Redis     -> 127.0.0.1:6382
+# =====================================================================
+
+services:
+  # -------------------------------------------------------------------
+  # MySQL 8.4 — primary relational store for the asset model
+  # -------------------------------------------------------------------
+  mysql:
+    image: mysql:8.4
+    container_name: eamcp-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${DB_DATABASE:-eamcp}
+      MYSQL_USER: ${DB_USERNAME:-eamcp}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-eamcp_secret}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --mysql-native-password=ON
+    ports:
+      - "127.0.0.1:3308:3306"
+    volumes:
+      - eamcp_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_ROOT_PASSWORD:-rootsecret}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Redis 7 — cache / sessions / queues
+  # -------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: eamcp-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6382:6379"
+    volumes:
+      - eamcp_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Backend — Laravel 12 (PHP 8.3) with hot dev reload
+  # -------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eamcp-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://127.0.0.1:8089
+      FRONTEND_URL: http://127.0.0.1:3020
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-eamcp}
+      DB_USERNAME: ${DB_USERNAME:-eamcp}
+      DB_PASSWORD: ${DB_PASSWORD:-eamcp_secret}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+      SESSION_DRIVER: redis
+      SANCTUM_STATEFUL_DOMAINS: 127.0.0.1:3020,localhost:3020
+      SESSION_DOMAIN: ""
+    ports:
+      - "127.0.0.1:8089:8000"
+    volumes:
+      - ./backend:/var/www/html:cached
+      - eamcp_backend_vendor:/var/www/html/vendor
+    networks:
+      - eamcp-net
+
+  # -------------------------------------------------------------------
+  # Frontend — Next.js (latest) with MUI + Tailwind, hot reload
+  # -------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eamcp-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:8089
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3020
+      NEXT_PUBLIC_BRAND_NAME: "Enterprise AI MCP Platform"
+      INTERNAL_API_URL: http://backend:8000
+    ports:
+      - "127.0.0.1:3020:3000"
+    volumes:
+      - ./frontend:/app:cached
+      - eamcp_frontend_node_modules:/app/node_modules
+      - eamcp_frontend_next:/app/.next
+    networks:
+      - eamcp-net
+
+volumes:
+  eamcp_mysql_data:
+  eamcp_redis_data:
+  eamcp_backend_vendor:
+  eamcp_frontend_node_modules:
+  eamcp_frontend_next:
+
+networks:
+  eamcp-net:
+    driver: bridge
